@@ -47,7 +47,8 @@ class Service(object):
         while True:
             try:
                 time.sleep(1)
-            except KeyboardInterrupt:
+            except (KeyboardInterrupt, SystemExit):
+                self.logger.error("CLIENT: Interrupted")
                 break
             except SystemExit:
                 break

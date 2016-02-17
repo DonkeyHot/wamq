@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class WhatsAppLayer(YowInterfaceLayer):
 
-    stompServer = None
+    stompService = None
 
     @ProtocolEntityCallback("message")
     def onMessage(self, messageProtocolEntity):
@@ -31,8 +31,8 @@ class WhatsAppLayer(YowInterfaceLayer):
                 self.onTextMessage(messageProtocolEntity)
 
     def onTextMessage(self, messageProtocolEntity):
-        if self.stompServer:
-            self.stompServer.forwardTextMessage(messageProtocolEntity.getFrom(False), messageProtocolEntity.getBody())
+        if self.stompService:
+            self.stompService.forwardTextMessage(messageProtocolEntity.getFrom(False), messageProtocolEntity.getBody())
         logger.info("Received TextMessage '" + messageProtocolEntity.getBody() + "  " + messageProtocolEntity.getFrom(False))
 
     @ProtocolEntityCallback("receipt")
@@ -40,5 +40,5 @@ class WhatsAppLayer(YowInterfaceLayer):
         ack = OutgoingAckProtocolEntity(entity.getId(), "receipt", entity.getType(), entity.getFrom())
         self.toLower(ack)
 
-    def setStompServer(self, stompServer):
-        self.stompServer = stompServer
+    def setStompService(self, stompService):
+        self.stompService = stompService

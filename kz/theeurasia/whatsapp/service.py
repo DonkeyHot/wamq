@@ -4,7 +4,7 @@
 '''
 
 from kz.theeurasia.whatsapp.stomp_server import StompService
-from kz.theeurasia.whatsapp.whatsapp_server import WhatsAppServer
+from kz.theeurasia.whatsapp.whatsapp_server import WhatsAppService
 import time
 import logging
 
@@ -21,27 +21,27 @@ class Run(object):
     stompWhatsAppDestinationOutbox = 'kz.theeurasia.whatsap.OUTBOX'
     stompWhatsAppDestinationInboxPrefix = 'kz.theeurasia.whatsap.INBOX'
 
-    whatsAppServer = None
-    stompServer = None
+    whatsAppService = None
+    stompService = None
 
     def __init__(self):
-        self.stompServer = StompService(
+        self.stompService = StompService(
                                        self.stompHost,
                                        self.stompPort,
                                        self.stompLogin,
                                        self.stompPassword,
                                        self.stompWhatsAppDestinationOutbox,
                                        self.stompWhatsAppDestinationInboxPrefix)
-        self.whatsAppServer = WhatsAppServer(self.whatsAppPhone, self.whatsAppPassword)
-        self.stompServer.setWhatsAppStack(self.whatsAppServer)
-        self.whatsAppServer.setStompServer(self.stompServer)
+        self.whatsAppService = WhatsAppService(self.whatsAppPhone, self.whatsAppPassword)
+        self.stompService.setWhatsAppStack(self.whatsAppService)
+        self.whatsAppService.setStompService(self.stompService)
 
     def start(self):
         logger.info("Starting service")
-        if self.stompServer:
-            self.stompServer.start()
-        if self.whatsAppServer:
-            self.whatsAppServer.start()
+        if self.stompService:
+            self.stompService.start()
+        if self.whatsAppService:
+            self.whatsAppService.start()
 
     def loop(self):
         while True:
@@ -54,10 +54,10 @@ class Run(object):
 
     def stop(self):
         logger.info("Stopping service")
-        if self.whatsAppServer:
-            self.whatsAppServer.stop()
-        if self.stompServer:
-            self.stompServer.stop()
+        if self.whatsAppService:
+            self.whatsAppService.stop()
+        if self.stompService:
+            self.stompService.stop()
 
 if __name__ == "__main__":
     run = Run()

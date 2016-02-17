@@ -21,13 +21,13 @@ from kz.theeurasia.whatsapp.whatsapp_layer import WhatsAppLayer
 class WhatsAppStack(object):
     whatsAppPhone = None
     whatsAppPassword = None
-    stompServer = None
+    stompService = None
     yowsupStack = None
 
-    def __init__(self, whatsAppPhone, whatsAppPassword, stompServer):
+    def __init__(self, whatsAppPhone, whatsAppPassword, stompService):
         self.whatsAppPhone = whatsAppPhone
         self.whatsAppPassword = whatsAppPassword
-        self.stompServer = stompServer
+        self.stompService = stompService
 
     def start(self):
         layers = (
@@ -44,7 +44,7 @@ class WhatsAppStack(object):
         for i in range(0, 50):
             layer = self.yowsupStack.getLayer(i)
             if layer.__class__ == WhatsAppLayer:
-                layer.setStompServer(self.stompServer)
+                layer.setStompService(self.stompService)
                 break
 
         try:

@@ -5,23 +5,23 @@ from kz.theeurasia.whatsapp.whatsapp_stack import WhatsAppStack
 
 
 
-class WhatsAppServer(object):
+class WhatsAppService(object):
     whatsAppPhone = None
     whatsAppPassword = None
 
-    stompServer = None
+    stompService = None
     
     def __init__(self, whatsAppPhone, whatsAppPassword):
         self.whatsAppPhone = whatsAppPhone
         self.whatsAppPassword = whatsAppPassword
 
-    def setStompServer(self, stompServer):
-        self.stompServer = stompServer
+    def setStompService(self, stompService):
+        self.stompService = stompService
 
     def start(self):
-#        if not self.stompServer:
-#            raise Exception("StompServer is not set")
-        self.stack = WhatsAppStack(self.whatsAppPhone, self.whatsAppPassword, self.stompServer)
+#        if not self.stompService:
+#            raise Exception("StompService is not set")
+        self.stack = WhatsAppStack(self.whatsAppPhone, self.whatsAppPassword, self.stompService)
         self.stack.start()
 #        self.proc = Process(target=self.stack.start)
 #        self.proc.start()

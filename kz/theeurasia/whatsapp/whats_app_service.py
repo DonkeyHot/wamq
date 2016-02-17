@@ -1,7 +1,7 @@
 '''
 @author: vadim.isaev
 '''
-from kz.theeurasia.whatsapp.whatsapp_stack import WhatsAppStack
+from kz.theeurasia.whatsapp.whats_app_stack import WhatsAppStack
 
 
 

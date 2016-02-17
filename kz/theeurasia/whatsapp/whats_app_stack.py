@@ -15,7 +15,7 @@ from yowsup.layers.protocol_receipts.layer import YowReceiptProtocolLayer
 from yowsup.stacks import YOWSUP_CORE_LAYERS
 from yowsup.stacks.yowstack import YowStack
 
-from kz.theeurasia.whatsapp.whatsapp_layer import WhatsAppLayer
+from kz.theeurasia.whatsapp.whats_app_layer import WhatsAppLayer
 
 
 class WhatsAppStack(object):

@@ -3,8 +3,8 @@
 @author: vadim.isaev
 '''
 
-from kz.theeurasia.whatsapp.stomp_server import StompService
-from kz.theeurasia.whatsapp.whatsapp_server import WhatsAppService
+from kz.theeurasia.whatsapp.stomp_service import StompService
+from kz.theeurasia.whatsapp.whats_app_service import WhatsAppService
 import time
 import logging
 

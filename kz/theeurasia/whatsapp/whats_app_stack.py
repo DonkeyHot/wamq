@@ -39,7 +39,6 @@ class WhatsAppStack(object):
         self.yowsupStack.setProp(YowNetworkLayer.PROP_ENDPOINT, YowConstants.ENDPOINTS[0])  # whatsapp server address
         self.yowsupStack.setProp(YowCoderLayer.PROP_DOMAIN, YowConstants.DOMAIN)
         self.yowsupStack.setProp(YowCoderLayer.PROP_RESOURCE, env.CURRENT_ENV.getResource())  # info about us as WhatsApp client
-        self.yowsupStack.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_CONNECT))  # sending the connect signal
 
         for i in range(0, 50):
             layer = self.yowsupStack.getLayer(i)
@@ -47,10 +46,15 @@ class WhatsAppStack(object):
                 layer.setStompService(self.stompService)
                 break
 
+        self.yowsupStack.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_CONNECT))  # sending the connect signal
         try:
             self.yowsupStack.loop()
+        except (KeyboardInterrupt, SystemExit):
+            self.logger.error("CLIENT: Interrupted")
+            return False
         except AuthError as e:
-            print("Authentication Error: %s" % e.message)
+            self.logger.error("Authentication Error: %s" % e.message)
+            return False
 
     def stop(self):
         self.yowsupStack.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_DISCONNECT))

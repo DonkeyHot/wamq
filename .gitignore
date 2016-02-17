@@ -60,3 +60,13 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+# some eclipse IDE stuff
+.settings/
+.metadata/
+.project
+.pydevproject
+.classpath
+
+# Mac OS X service directories
+.DS_Store

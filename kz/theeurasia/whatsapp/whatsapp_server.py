@@ -1,8 +1,8 @@
 '''
 @author: vadim.isaev
 '''
+from kz.theeurasia.whatsapp.whatsapp_stack import WhatsAppStack
 
-from kz.theeurasia.whatsapp.test.whatsapp_stack import WhatsAppStack
 
 
 class WhatsAppServer(object):

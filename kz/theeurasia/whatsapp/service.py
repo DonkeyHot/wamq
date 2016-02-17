@@ -3,37 +3,41 @@
 @author: vadim.isaev
 '''
 
-from kz.theeurasia.whatsapp.test.stomp_server import StompServer
-from kz.theeurasia.whatsapp.test.whatsapp_server import WhatsAppServer
+from kz.theeurasia.whatsapp.stomp_server import StompService
+from kz.theeurasia.whatsapp.whatsapp_server import WhatsAppServer
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Run(object):
     whatsAppPhone = '77010359568'
     whatsAppPassword = 'dooVWTrlE5Ggtmg2NPp1hCpsPwY='
 
-    stompServerHost = 'almaty-linuxapp01.theeurasia.local'
-    stompServerPort = 61613
-    stompServerLogin = 'admin'
-    stompServerPassword = 'admin'
-    stompServerWhatsappOutboxQueue = 'kz.theeurasia.whatsap.OUTBOX'
-    stomServerWhatsappInboxQueuePrefix = 'kz.theeurasia.whatsap.INBOX'
-    
+    stompHost = 'almaty-linuxapp01.theeurasia.local'
+    stompPort = 61613
+    stompLogin = 'admin'
+    stompPassword = 'admin'
+    stompWhatsAppDestinationOutbox = 'kz.theeurasia.whatsap.OUTBOX'
+    stompWhatsAppDestinationInboxPrefix = 'kz.theeurasia.whatsap.INBOX'
+
     whatsAppServer = None
     stompServer = None
 
     def __init__(self):
-        self.stompServer = StompServer(
-                                       self.stompServerHost, 
-                                       self.stompServerPort, 
-                                       self.stompServerLogin, 
-                                       self.stompServerPassword, 
-                                       self.stompServerWhatsappOutboxQueue,
-                                       self.stomServerWhatsappInboxQueuePrefix)
+        self.stompServer = StompService(
+                                       self.stompHost,
+                                       self.stompPort,
+                                       self.stompLogin,
+                                       self.stompPassword,
+                                       self.stompWhatsAppDestinationOutbox,
+                                       self.stompWhatsAppDestinationInboxPrefix)
         self.whatsAppServer = WhatsAppServer(self.whatsAppPhone, self.whatsAppPassword)
         self.stompServer.setWhatsAppStack(self.whatsAppServer)
         self.whatsAppServer.setStompServer(self.stompServer)
 
     def start(self):
+        logger.info("Starting service")
         if self.stompServer:
             self.stompServer.start()
         if self.whatsAppServer:
@@ -49,6 +53,7 @@ class Run(object):
                 break
 
     def stop(self):
+        logger.info("Stopping service")
         if self.whatsAppServer:
             self.whatsAppServer.stop()
         if self.stompServer:

@@ -2,11 +2,15 @@
 '''
 @author: vadim.isaev
 '''
+import logging
+
 from yowsup.layers.interface import YowInterfaceLayer, ProtocolEntityCallback
 from yowsup.layers.protocol_acks.protocolentities.ack_outgoing import OutgoingAckProtocolEntity
 from yowsup.layers.protocol_messages.protocolentities import TextMessageProtocolEntity
 from yowsup.layers.protocol_receipts.protocolentities.receipt_outgoing import OutgoingReceiptProtocolEntity
 
+
+logger = logging.getLogger(__name__)
 
 class WhatsAppLayer(YowInterfaceLayer):
 
@@ -29,12 +33,12 @@ class WhatsAppLayer(YowInterfaceLayer):
     def onTextMessage(self, messageProtocolEntity):
         if self.stompServer:
             self.stompServer.forwardTextMessage(messageProtocolEntity.getFrom(False), messageProtocolEntity.getBody())
-        print("TEXTMESSAGE " + messageProtocolEntity.getBody() + "  " + messageProtocolEntity.getFrom(False))
+        logger.info("Received TextMessage '" + messageProtocolEntity.getBody() + "  " + messageProtocolEntity.getFrom(False))
 
     @ProtocolEntityCallback("receipt")
     def onReceipt(self, entity):
         ack = OutgoingAckProtocolEntity(entity.getId(), "receipt", entity.getType(), entity.getFrom())
         self.toLower(ack)
-    
+
     def setStompServer(self, stompServer):
         self.stompServer = stompServer

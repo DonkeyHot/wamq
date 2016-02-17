@@ -10,7 +10,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class Run(object):
+class Service(object):
     whatsAppPhone = '77010359568'
     whatsAppPassword = 'dooVWTrlE5Ggtmg2NPp1hCpsPwY='
 
@@ -60,7 +60,7 @@ class Run(object):
             self.stompService.stop()
 
 if __name__ == "__main__":
-    run = Run()
+    run = Service()
     run.start()
     run.loop()
     run.stop()

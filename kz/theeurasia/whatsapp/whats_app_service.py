@@ -46,5 +46,5 @@ class WhatsAppService(object):
 
     def checkAlive(self):
         if not self.thread.isAlive():
-            logger.info("WhatsApp service is not alive. Restarting...")
+            logger.info("    WhatsApp service is not alive. Restarting...")
             self.start()

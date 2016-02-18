@@ -27,8 +27,9 @@ class Service(object):
     stompPort = 61613
     stompLogin = 'admin'
     stompPassword = 'admin'
-    stompWhatsAppDestinationOutbox = 'kz.theeurasia.whatsap.OUTBOX'
-    stompWhatsAppDestinationInboxPrefix = 'kz.theeurasia.whatsap.INBOX'
+
+    stompListeningDestinations = ['/queue/kz.theeurasia.whatsapp.OUTBOX', '/topic/kz.theeurasia.whatsapp.OUTBOX']
+    stompWhatsAppDestinationInboxPrefix = '/topic/kz.theeurasia.whatsapp.INBOX'
 
     whatsAppService = None
     stompService = None
@@ -39,11 +40,14 @@ class Service(object):
                                        self.stompPort,
                                        self.stompLogin,
                                        self.stompPassword,
-                                       self.stompWhatsAppDestinationOutbox,
+                                       self.stompListeningDestinations,
                                        self.stompWhatsAppDestinationInboxPrefix,
                                        self.whatsAppPhone)
-        self.whatsAppService = WhatsAppService(self.whatsAppPhone, self.whatsAppPassword, self.whatsAppAutoReply)
-        self.stompService.setWhatsAppStack(self.whatsAppService)
+        self.whatsAppService = WhatsAppService(
+                                               self.whatsAppPhone,
+                                               self.whatsAppPassword,
+                                               self.whatsAppAutoReply)
+        self.stompService.setWhatsAppService(self.whatsAppService)
         self.whatsAppService.setStompService(self.stompService)
 
     def start(self):

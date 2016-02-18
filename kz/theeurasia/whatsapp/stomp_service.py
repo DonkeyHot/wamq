@@ -6,9 +6,9 @@ import logging
 import sys
 
 import stomp
+from stomp.exception import ConnectFailedException
 
 import functions
-from stomp.exception import ConnectFailedException
 
 
 ch = logging.StreamHandler(sys.stdout)
@@ -17,9 +17,9 @@ logger = logging.getLogger(__name__)
 logger.addHandler(ch)
 
 class MessagesListener(object):
-    def __init__(self):
-        self.recivedCount = 0;
-        self.errorCount = 0
+    recivedCount = 0;
+    errorCount = 0
+    whatsAppService = None
 
     def on_error(self, headers, message):
         self.errorCount += 1
@@ -33,56 +33,62 @@ class MessagesListener(object):
         print('Sending message "%s"' % message)
         pass
 
-    def setWhatsAppStack(self, whats_app_stack):
-        self.whats_app_stack = whats_app_stack
+    def setWhatsAppService(self, whatsAppService):
+        self.whatsAppService = whatsAppService
 
 class StompService(object):
     stompHost = None
     stompPort = None
     stompLogin = None
     stompPassword = None
-    stompWhatsAppDestinationOutbox = None
+    stompListeningDestinations = None
     stompWhatsAppDestinationInboxPrefix = None
-    whatsAppStack = None
     whatsAppPhone = None
+
+    whatsAppService = None
 
     def __init__(self,
                  stompHost,
                  stompPort,
                  stompLogin,
                  stompPassword,
-                 stompWhatsAppDestinationOutbox,
+                 stompListeningDestinations,
                  stompWhatsAppDestinationInboxPrefix,
                  whatsAppPhone):
         self.stompHost = stompHost
         self.stompPort = stompPort
         self.stompLogin = stompLogin
         self.stompPassword = stompPassword
-        self.stompWhatsAppDestinationOutbox = stompWhatsAppDestinationOutbox
+        self.stompListeningDestinations = stompListeningDestinations
         self.stompWhatsAppDestinationInboxPrefix = stompWhatsAppDestinationInboxPrefix
         self.whatsAppPhone = whatsAppPhone
 
-    def setWhatsAppStack(self, whatsAppStack):
-        self.whatsAppStack = whatsAppStack
+    def setWhatsAppService(self, whatsAppService):
+        self.whatsAppService = whatsAppService
 
     def start(self):
         logger.info("    Starting Stomp service...")
         try:
             self.connection = stomp.Connection([(self.stompHost, self.stompPort)])
             listener = MessagesListener()
-            if self.whatsAppStack:
-                listener.setWhatsAppStack(self.whatsAppStack)
+            if self.whatsAppService:
+                listener.setWhatsAppService(self.whatsAppService)
             self.connection.set_listener('messages', MessagesListener())
             self.connection.start()
             self.connection.connect(self.stompLogin, self.stompPassword, wait=True)
-            self.connection.subscribe(self.stompWhatsAppDestinationOutbox, self.stompWhatsAppDestinationOutbox)
+            if self.stompListeningDestinations:
+                for dest in self.stompListeningDestinations:
+                    logger.info("        Stomp service is listening '%s'" % dest)
+                    self.connection.subscribe(dest, dest)
         except ConnectFailedException:
             logger.error("Connection to Stomp server failed")
             raise
 
     def stop(self):
         logger.info("    Stopping Stomp service...")
-        self.connection.unsubscribe(self.stompWhatsAppDestinationOutbox)
+        if self.stompListeningDestinations:
+            for dest in self.stompListeningDestinations:
+                self.connection.unsubscribe(dest)
         self.connection.disconnect()
         self.connection.stop()
 
@@ -131,5 +137,5 @@ class StompService(object):
 
     def checkAlive(self):
         if not self.connection.is_connected():
-            logger.info("Stomp service is not alive. Restarting...")
+            logger.info("    Stomp service is not alive. Restarting...")
             self.start()

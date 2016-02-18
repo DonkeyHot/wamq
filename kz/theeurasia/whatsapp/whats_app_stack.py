@@ -45,11 +45,14 @@ class WhatsAppStack(object):
         self.yowsupStack.setProp(YowCoderLayer.PROP_DOMAIN, YowConstants.DOMAIN)
         self.yowsupStack.setProp(YowCoderLayer.PROP_RESOURCE, env.CURRENT_ENV.getResource())  # info about us as WhatsApp client
 
-        for i in range(0, 50):
+        layer = None
+        i = 0
+        while (True):
             layer = self.yowsupStack.getLayer(i)
-            if layer.__class__ == WhatsAppLayer:
+            if layer != None and layer.__class__ == WhatsAppLayer:
                 layer.setStompService(self.stompService)
                 break
+            i += 1
 
         self.yowsupStack.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_CONNECT))  # sending the connect signal
         try:

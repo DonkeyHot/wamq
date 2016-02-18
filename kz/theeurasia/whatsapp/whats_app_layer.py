@@ -3,6 +3,7 @@
 @author: vadim.isaev
 '''
 import logging
+import sys
 
 from yowsup.layers.interface import YowInterfaceLayer, ProtocolEntityCallback
 from yowsup.layers.protocol_acks.protocolentities.ack_outgoing import OutgoingAckProtocolEntity
@@ -10,8 +11,10 @@ from yowsup.layers.protocol_messages.protocolentities import TextMessageProtocol
 from yowsup.layers.protocol_receipts.protocolentities.receipt_outgoing import OutgoingReceiptProtocolEntity
 
 
+ch = logging.StreamHandler(sys.stdout)
+ch.setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
-
+logger.addHandler(ch)
 
 class WhatsAppLayer(YowInterfaceLayer):
 
@@ -65,11 +68,21 @@ class WhatsAppLayer(YowInterfaceLayer):
 
     def onTextMessage(self, entity):
         if self.stompService:
-            self.stompService.forwardTextMessage(entity.getFrom(False), entity.getBody())
+            self.stompService.forwardTextMessage(
+                                                 entity.getFrom(False),
+                                                 entity.getBody(),
+                                                 entity.getTimestamp())
 
     def onImageMessage(self, entity):
         if self.stompService:
-            self.stompService.forwardImageURL(entity.getFrom(False), entity.url, entity.caption, entity.fileName, entity.mimeType, entity.size)
+            self.stompService.forwardImageURL(
+                                              entity.getFrom(False),
+                                              entity.url,
+                                              entity.caption,
+                                              entity.fileName,
+                                              entity.mimeType,
+                                              entity.size,
+                                              entity.getTimestamp())
 
     def onAudioMessage(self, entity):
         self.sendUnsupported(entity, "Аудио сообщения не поддерживаются")

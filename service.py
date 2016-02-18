@@ -3,19 +3,25 @@
 @author: vadim.isaev
 '''
 
+import logging
+import sys
+import time
+
 from kz.theeurasia.whatsapp.stomp_service import StompService
 from kz.theeurasia.whatsapp.whats_app_service import WhatsAppService
-import time
-import logging
 
-logging.basicConfig(filename='service.log', level=logging.DEBUG)
 
+logging.basicConfig(filename='service.log', level=logging.INFO)
+
+ch = logging.StreamHandler(sys.stdout)
+ch.setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
+logger.addHandler(ch)
 
 class Service(object):
     whatsAppPhone = '77010359568'
     whatsAppPassword = 'dooVWTrlE5Ggtmg2NPp1hCpsPwY='
-    whatsAppAutoReply = False
+    whatsAppAutoReply = True
 
     stompHost = 'almaty-linuxapp01.theeurasia.local'
     stompPort = 61613
@@ -34,13 +40,14 @@ class Service(object):
                                        self.stompLogin,
                                        self.stompPassword,
                                        self.stompWhatsAppDestinationOutbox,
-                                       self.stompWhatsAppDestinationInboxPrefix)
+                                       self.stompWhatsAppDestinationInboxPrefix,
+                                       self.whatsAppPhone)
         self.whatsAppService = WhatsAppService(self.whatsAppPhone, self.whatsAppPassword, self.whatsAppAutoReply)
         self.stompService.setWhatsAppStack(self.whatsAppService)
         self.whatsAppService.setStompService(self.stompService)
 
     def start(self):
-        logger.info("Starting service")
+        logger.info("Starting services...")
         if self.stompService:
             self.stompService.start()
         if self.whatsAppService:
@@ -49,15 +56,18 @@ class Service(object):
     def loop(self):
         while True:
             try:
+                self.stompService.checkAlive()
+                self.whatsAppService.checkAlive()
                 time.sleep(1)
             except (KeyboardInterrupt, SystemExit):
-                self.logger.error("CLIENT: Interrupted")
+                logger.info("CLIENT: Interrupted")
                 break
             except SystemExit:
+                logger.info("SYSTEM: Interrupted")
                 break
 
     def stop(self):
-        logger.info("Stopping service")
+        logger.info("Stopping services...")
         if self.whatsAppService:
             self.whatsAppService.stop()
         if self.stompService:

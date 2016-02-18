@@ -1,9 +1,17 @@
 '''
 @author: vadim.isaev
 '''
+import logging
+import sys
+import threading
+
 from kz.theeurasia.whatsapp.whats_app_stack import WhatsAppStack
 
 
+ch = logging.StreamHandler(sys.stdout)
+ch.setLevel(logging.INFO)
+logger = logging.getLogger(__name__)
+logger.addHandler(ch)
 
 class WhatsAppService(object):
     whatsAppPhone = None
@@ -16,7 +24,7 @@ class WhatsAppService(object):
                  whatsAppPhone,
                  whatsAppPassword,
                  autoReply,
-                 stompService = None):
+                 stompService=None):
         self.whatsAppPhone = whatsAppPhone
         self.whatsAppPassword = whatsAppPassword
         self.autoReply = autoReply
@@ -26,14 +34,17 @@ class WhatsAppService(object):
         self.stompService = stompService
 
     def start(self):
-#        if not self.stompService:
-#            raise Exception("StompService is not set")
+        logger.info("    Starting WhatsApp service...")
         self.stack = WhatsAppStack(self.whatsAppPhone, self.whatsAppPassword, self.autoReply, self.stompService)
-        self.stack.start()
-#        self.proc = Process(target=self.stack.start)
-#        self.proc.start()
+        self.thread = threading.Thread(None, target=self.stack.start)
+        self.thread.setDaemon(True)
+        self.thread.start()
 
     def stop(self):
-#        if self.proc:
-#            self.proc.terminate()
+        logger.info("    Stopping WhatsApp service...")
         self.stack.stop()
+
+    def checkAlive(self):
+        if not self.thread.isAlive():
+            logger.info("WhatsApp service is not alive. Restarting...")
+            self.start()

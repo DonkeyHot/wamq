@@ -1,6 +1,9 @@
 '''
 @author: vadim.isaev
 '''
+import logging
+import sys
+
 from yowsup import env
 from yowsup.common.constants import YowConstants
 from yowsup.layers import YowParallelLayer, YowLayerEvent
@@ -10,14 +13,19 @@ from yowsup.layers.axolotl.layer import YowAxolotlLayer
 from yowsup.layers.coder.layer import YowCoderLayer
 from yowsup.layers.network.layer import YowNetworkLayer
 from yowsup.layers.protocol_acks.layer import YowAckProtocolLayer
+from yowsup.layers.protocol_media.layer import YowMediaProtocolLayer
 from yowsup.layers.protocol_messages.layer import YowMessagesProtocolLayer
 from yowsup.layers.protocol_receipts.layer import YowReceiptProtocolLayer
 from yowsup.stacks import YOWSUP_CORE_LAYERS
 from yowsup.stacks.yowstack import YowStack
 
 from kz.theeurasia.whatsapp.whats_app_layer import WhatsAppLayer
-from yowsup.layers.protocol_media.layer import YowMediaProtocolLayer
 
+
+ch = logging.StreamHandler(sys.stdout)
+ch.setLevel(logging.INFO)
+logger = logging.getLogger(__name__)
+logger.addHandler(ch)
 
 class WhatsAppStack(object):
 
@@ -77,10 +85,10 @@ class WhatsAppStack(object):
         try:
             self.yowsupStack.loop()
         except (KeyboardInterrupt, SystemExit):
-            self.logger.error("CLIENT: Interrupted")
+            logger.error("CLIENT: Interrupted")
             return False
         except AuthError as e:
-            self.logger.error("Authentication Error: %s" % e.message)
+            logger.error("Authentication Error: %s" % e.message)
             return False
 
     def stop(self):

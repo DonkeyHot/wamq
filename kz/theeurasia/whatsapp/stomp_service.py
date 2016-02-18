@@ -1,13 +1,12 @@
 '''
 @author: vadim.isaev
 '''
-import json
 import logging
 
 import stomp
 from stomp.exception import ConnectFailedException
 
-import functions
+from kz.theeurasia.whatsapp import functions
 
 
 logger = logging.getLogger(__name__)
@@ -44,7 +43,8 @@ class MessagesListener(object):
 #                    ]
 
     def sendMessageToWhastapp(self, headers, message):
-        msg = json.loads(message)
+        msg = functions.safeJsonDecode(message)
+
         sendTo = msg['to']
         sendFrom = msg['from']
         msgType = msg['type']
@@ -130,7 +130,7 @@ class StompService(object):
                                  'text': text
                                  }
                     }
-        jsonCode = json.dumps(message, indent=4)
+        jsonCode = functions.safeJsonEncode(message)
         self.connection.send(dest, jsonCode)
         logger.debug("Forwared message to ActiveMQ queue: '" + dest + "' FROM: " + messageFrom + " TEXT: " + text)
 
@@ -150,7 +150,7 @@ class StompService(object):
                                  }
                     }
 
-        jsonCode = json.dumps(message, indent=4)
+        jsonCode = functions.safeJsonEncode(message)
         self.connection.send(dest, jsonCode)
         logger.debug("Forwared Image to ActiveMQ queue: %s FROM: %s URL %s CAPTION: %s FILENAME: %s MIME TYPE: %s SIZE: %s " % (dest, messageFrom, url, caption, fileName, mimeType, size))
 

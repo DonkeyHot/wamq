@@ -12,6 +12,7 @@ from yowsup.layers.protocol_receipts.protocolentities.receipt_outgoing import Ou
 
 logger = logging.getLogger(__name__)
 
+
 class WhatsAppLayer(YowInterfaceLayer):
 
     stompService = None
@@ -21,6 +22,9 @@ class WhatsAppLayer(YowInterfaceLayer):
         self.sendReceipt(entity)
         if entity.getType() == 'text':
             self.onTextMessage(entity)
+        elif entity.getType() == 'media':
+            if entity.getMediaType() == 'image':
+                self.onImageMessage(entity)
 
     def sendReceipt(self, entity):
         receipt = OutgoingReceiptProtocolEntity(entity.getId(), entity.getFrom(), 'read', entity.getParticipant())
@@ -32,6 +36,11 @@ class WhatsAppLayer(YowInterfaceLayer):
         if self.stompService:
             self.stompService.forwardTextMessage(entity.getFrom(False), entity.getBody())
         logger.info("Received TextMessage '" + entity.getBody() + "  " + entity.getFrom(False))
+
+    def onImageMessage(self,entity):
+        if self.stompService:
+            self.stompService.forwardImageURL(entity.getFrom(False), entity.url, entity.caption, entity.fileName, entity.mimeType, entity.size)
+        logger.info("Received Image '" + entity.url + " " + entity.caption + "  " + entity.getFrom(False))
 
     @ProtocolEntityCallback("receipt")
     def onReceipt(self, entity):

@@ -16,6 +16,7 @@ from yowsup.stacks import YOWSUP_CORE_LAYERS
 from yowsup.stacks.yowstack import YowStack
 
 from kz.theeurasia.whatsapp.whats_app_layer import WhatsAppLayer
+from yowsup.layers.protocol_media.layer import YowMediaProtocolLayer
 
 
 class WhatsAppStack(object):
@@ -36,7 +37,14 @@ class WhatsAppStack(object):
     def start(self):
         layers = (
                   WhatsAppLayer,
-                  YowParallelLayer([YowAuthenticationProtocolLayer, YowMessagesProtocolLayer, YowReceiptProtocolLayer, YowAckProtocolLayer]), YowAxolotlLayer
+                  YowParallelLayer([
+                                    YowAuthenticationProtocolLayer, 
+                                    YowMessagesProtocolLayer, 
+                                    YowMediaProtocolLayer, 
+                                    YowReceiptProtocolLayer, 
+                                    YowAckProtocolLayer
+                                    ]),
+                  YowAxolotlLayer
         ) + YOWSUP_CORE_LAYERS
 
         self.yowsupStack = YowStack(layers)

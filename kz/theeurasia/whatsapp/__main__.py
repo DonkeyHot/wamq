@@ -14,7 +14,7 @@ from kz.theeurasia.whatsapp.whats_app_service import WhatsAppService
 
 #    filename='whatsapp_mq_service.log'
 #    stream=sys.stdout
-logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s %(message)s')
+logging.basicConfig(filename='whatsapp_mq_service.log', level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s %(message)s')
 
 logger = logging.getLogger(__name__)
 

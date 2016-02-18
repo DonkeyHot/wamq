@@ -16,11 +16,11 @@ def convertTimeStampToText(timestamp):
     else:
         return None
 
-def safeJsonDecode(struct):
-    return json.loads(struct, object_hook=_byteify)
+def safeJsonDecode(jsonString):
+    return json.loads(jsonString, object_hook=_byteify)
 
-def safeJsonEncode(json):
-    return json.dumps(json, indent=3)
+def safeJsonEncode(jsonStruct):
+    return json.dumps(jsonStruct, indent=3)
 
 def _byteify(data, ignore_dicts = False):
     # if this is a unicode string, return its string representation

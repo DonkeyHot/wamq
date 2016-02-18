@@ -19,12 +19,16 @@ from kz.theeurasia.whatsapp.whats_app_layer import WhatsAppLayer
 
 
 class WhatsAppStack(object):
+
     whatsAppPhone = None
     whatsAppPassword = None
     stompService = None
     yowsupStack = None
 
-    def __init__(self, whatsAppPhone, whatsAppPassword, stompService):
+    def __init__(self,
+                 whatsAppPhone,
+                 whatsAppPassword,
+                 stompService):
         self.whatsAppPhone = whatsAppPhone
         self.whatsAppPassword = whatsAppPassword
         self.stompService = stompService
@@ -34,6 +38,7 @@ class WhatsAppStack(object):
                   WhatsAppLayer,
                   YowParallelLayer([YowAuthenticationProtocolLayer, YowMessagesProtocolLayer, YowReceiptProtocolLayer, YowAckProtocolLayer]), YowAxolotlLayer
         ) + YOWSUP_CORE_LAYERS
+
         self.yowsupStack = YowStack(layers)
         self.yowsupStack.setProp(YowAuthenticationProtocolLayer.PROP_CREDENTIALS, (self.whatsAppPhone, self.whatsAppPassword))  # setting credentials
         self.yowsupStack.setProp(YowNetworkLayer.PROP_ENDPOINT, YowConstants.ENDPOINTS[0])  # whatsapp server address

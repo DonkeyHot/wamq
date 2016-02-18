@@ -74,5 +74,8 @@ class StompService(object):
 
     def forwardImageURL(self, messageFrom, url, caption, fileName, mimeType, size):
         dest = self.stompWhatsAppDestinationInboxPrefix + '.' + messageFrom
-        self.connection.send(dest, caption + " " + url)
+        message = url
+        if caption:
+            message += " " + caption
+        self.connection.send(dest, message)
         logger.info("Forwared Image to ActiveMQ queue: %s FROM: %s URL %s CAPTION: %s FILENAME: %s MIME TYPE: %s SIZE: %s " % (dest, messageFrom, url, caption, fileName, mimeType, size))

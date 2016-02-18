@@ -24,24 +24,42 @@ class WhatsAppStack(object):
     whatsAppPhone = None
     whatsAppPassword = None
     stompService = None
+    autoReply = False
     yowsupStack = None
 
     def __init__(self,
                  whatsAppPhone,
                  whatsAppPassword,
+                 autoReply,
                  stompService):
         self.whatsAppPhone = whatsAppPhone
         self.whatsAppPassword = whatsAppPassword
+        self.autoReply = autoReply
         self.stompService = stompService
+
+
+    def findWhatsAppLayerInStack(self):
+        layer = None
+        i = 0
+        while (True):
+            layer = self.yowsupStack.getLayer(i)
+            if layer != None and layer.__class__ == WhatsAppLayer:
+                return layer
+            i += 1
+        return None
+
+    def setupWhatsAppLayer(self, layer):
+        layer.setStompService(self.stompService)
+        layer.setAutoReply(self.autoReply)
 
     def start(self):
         layers = (
                   WhatsAppLayer,
                   YowParallelLayer([
-                                    YowAuthenticationProtocolLayer, 
-                                    YowMessagesProtocolLayer, 
-                                    YowMediaProtocolLayer, 
-                                    YowReceiptProtocolLayer, 
+                                    YowAuthenticationProtocolLayer,
+                                    YowMessagesProtocolLayer,
+                                    YowMediaProtocolLayer,
+                                    YowReceiptProtocolLayer,
                                     YowAckProtocolLayer
                                     ]),
                   YowAxolotlLayer
@@ -53,14 +71,7 @@ class WhatsAppStack(object):
         self.yowsupStack.setProp(YowCoderLayer.PROP_DOMAIN, YowConstants.DOMAIN)
         self.yowsupStack.setProp(YowCoderLayer.PROP_RESOURCE, env.CURRENT_ENV.getResource())  # info about us as WhatsApp client
 
-        layer = None
-        i = 0
-        while (True):
-            layer = self.yowsupStack.getLayer(i)
-            if layer != None and layer.__class__ == WhatsAppLayer:
-                layer.setStompService(self.stompService)
-                break
-            i += 1
+        self.setupWhatsAppLayer(self.findWhatsAppLayerInStack())
 
         self.yowsupStack.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_CONNECT))  # sending the connect signal
         try:

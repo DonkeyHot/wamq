@@ -16,31 +16,30 @@ logger = logging.getLogger(__name__)
 class WhatsAppLayer(YowInterfaceLayer):
 
     stompService = None
+    autoReply = False
 
     @ProtocolEntityCallback("message")
     def onMessage(self, entity):
         self.sendReceipt(entity)
+        if self.autoReply:
+            self.sendAutoRepy(entity)
         if entity.getType() == 'text':
             self.onTextMessage(entity)
         elif entity.getType() == 'media':
             if entity.getMediaType() == 'image':
                 self.onImageMessage(entity)
-
-    def sendReceipt(self, entity):
-        receipt = OutgoingReceiptProtocolEntity(entity.getId(), entity.getFrom(), 'read', entity.getParticipant())
-        self.toLower(receipt)
-
-    def onTextMessage(self, entity):
-        autoReplyEntity = TextMessageProtocolEntity("RE: " + entity.getBody(),to=entity.getFrom())
-        self.toLower(autoReplyEntity)
-        if self.stompService:
-            self.stompService.forwardTextMessage(entity.getFrom(False), entity.getBody())
-        logger.info("Received TextMessage '" + entity.getBody() + "  " + entity.getFrom(False))
-
-    def onImageMessage(self,entity):
-        if self.stompService:
-            self.stompService.forwardImageURL(entity.getFrom(False), entity.url, entity.caption, entity.fileName, entity.mimeType, entity.size)
-        logger.info("Received Image '" + entity.url + " " + entity.caption + "  " + entity.getFrom(False))
+            elif entity.getMediaType() == 'audio':
+                self.onAudioMessage(entity)
+            elif entity.getMediaType() == 'video':
+                self.onVideoMessage(entity)
+            elif entity.getMediaType() == 'vcard':
+                self.onVCardMessage(entity)
+            elif entity.getMediaType() == 'location':
+                self.onLocationMessage(entity)
+            else:
+                self.sendUnsupported(entity)
+        else:
+            self.sendUnsupported(entity)
 
     @ProtocolEntityCallback("receipt")
     def onReceipt(self, entity):
@@ -49,3 +48,37 @@ class WhatsAppLayer(YowInterfaceLayer):
 
     def setStompService(self, stompService):
         self.stompService = stompService
+
+    def setAutoReply(self, autoReply):
+        self.autoReply = autoReply
+
+    def sendReceipt(self, entity):
+        receipt = OutgoingReceiptProtocolEntity(entity.getId(), entity.getFrom(), 'read', entity.getParticipant())
+        self.toLower(receipt)
+
+    def sendUnsupported(self, entity, message="Данные виды сообщений не поддерживаются"):
+        replyEntity = TextMessageProtocolEntity(message, to=entity.getFrom())
+        self.toLower(replyEntity)
+
+    def sendAutoRepy(self, entity):
+        self.toLower(entity.forward(entity.getFrom()))
+
+    def onTextMessage(self, entity):
+        if self.stompService:
+            self.stompService.forwardTextMessage(entity.getFrom(False), entity.getBody())
+
+    def onImageMessage(self, entity):
+        if self.stompService:
+            self.stompService.forwardImageURL(entity.getFrom(False), entity.url, entity.caption, entity.fileName, entity.mimeType, entity.size)
+
+    def onAudioMessage(self, entity):
+        self.sendUnsupported(entity, "Аудио сообщения не поддерживаются")
+
+    def onVideoMessage(self, entity):
+        self.sendUnsupported(entity, "Видео сообщения не поддерживаются")
+
+    def onVCardMessage(self, entity):
+        self.sendUnsupported(entity, "Визитки не поддерживаются")
+
+    def onLocationMessage(self, entity):
+        self.sendUnsupported(entity, "Точки местоположения не поддерживаются")

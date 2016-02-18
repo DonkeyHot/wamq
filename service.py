@@ -8,11 +8,14 @@ from kz.theeurasia.whatsapp.whats_app_service import WhatsAppService
 import time
 import logging
 
+logging.basicConfig(filename='service.log', level=logging.DEBUG)
+
 logger = logging.getLogger(__name__)
 
 class Service(object):
     whatsAppPhone = '77010359568'
     whatsAppPassword = 'dooVWTrlE5Ggtmg2NPp1hCpsPwY='
+    whatsAppAutoReply = False
 
     stompHost = 'almaty-linuxapp01.theeurasia.local'
     stompPort = 61613
@@ -32,7 +35,7 @@ class Service(object):
                                        self.stompPassword,
                                        self.stompWhatsAppDestinationOutbox,
                                        self.stompWhatsAppDestinationInboxPrefix)
-        self.whatsAppService = WhatsAppService(self.whatsAppPhone, self.whatsAppPassword)
+        self.whatsAppService = WhatsAppService(self.whatsAppPhone, self.whatsAppPassword, self.whatsAppAutoReply)
         self.stompService.setWhatsAppStack(self.whatsAppService)
         self.whatsAppService.setStompService(self.stompService)
 

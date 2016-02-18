@@ -11,13 +11,14 @@ from kz.theeurasia.whatsapp.stomp_service import StompService, \
     StompServiceException
 from kz.theeurasia.whatsapp.whats_app_service import WhatsAppService
 
-#    filename='service.log'
+
+#    filename='whatsapp_mq_service.log'
 #    stream=sys.stdout
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s %(message)s')
 
 logger = logging.getLogger(__name__)
 
-class Service(object):
+class MainService(object):
     whatsAppPhone = '77010359568'
     whatsAppPassword = 'dooVWTrlE5Ggtmg2NPp1hCpsPwY='
     whatsAppAutoReply = True
@@ -82,7 +83,7 @@ class Service(object):
             self.stompService.stop()
 
 if __name__ == "__main__":
-    run = Service()
+    run = MainService()
     if not run.start():
         run.stop()
         sys.exit(1)

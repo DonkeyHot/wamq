@@ -17,23 +17,21 @@ class WhatsAppLayer(YowInterfaceLayer):
     stompService = None
 
     @ProtocolEntityCallback("message")
-    def onMessage(self, messageProtocolEntity):
-        # send receipt otherwise we keep receiving the same message over and over
-        if True:
-            receipt = OutgoingReceiptProtocolEntity(messageProtocolEntity.getId(), messageProtocolEntity.getFrom(), 'read', messageProtocolEntity.getParticipant())
-            self.toLower(receipt)
-            outgoingMessageProtocolEntity = TextMessageProtocolEntity(
-                                                                      "RE: " + messageProtocolEntity.getBody(),
-                                                                      to=messageProtocolEntity.getFrom()
-                                                                      )
-            self.toLower(outgoingMessageProtocolEntity)
-            if messageProtocolEntity.getType() == 'text':
-                self.onTextMessage(messageProtocolEntity)
+    def onMessage(self, entity):
+        self.sendReceipt(entity)
+        if entity.getType() == 'text':
+            self.onTextMessage(entity)
 
-    def onTextMessage(self, messageProtocolEntity):
+    def sendReceipt(self, entity):
+        receipt = OutgoingReceiptProtocolEntity(entity.getId(), entity.getFrom(), 'read', entity.getParticipant())
+        self.toLower(receipt)
+
+    def onTextMessage(self, entity):
+        autoReplyEntity = TextMessageProtocolEntity("RE: " + entity.getBody(),to=entity.getFrom())
+        self.toLower(autoReplyEntity)
         if self.stompService:
-            self.stompService.forwardTextMessage(messageProtocolEntity.getFrom(False), messageProtocolEntity.getBody())
-        logger.info("Received TextMessage '" + messageProtocolEntity.getBody() + "  " + messageProtocolEntity.getFrom(False))
+            self.stompService.forwardTextMessage(entity.getFrom(False), entity.getBody())
+        logger.info("Received TextMessage '" + entity.getBody() + "  " + entity.getFrom(False))
 
     @ProtocolEntityCallback("receipt")
     def onReceipt(self, entity):

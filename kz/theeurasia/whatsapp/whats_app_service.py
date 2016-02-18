@@ -2,16 +2,12 @@
 @author: vadim.isaev
 '''
 import logging
-import sys
 import threading
 
 from kz.theeurasia.whatsapp.whats_app_stack import WhatsAppStack
 
 
-ch = logging.StreamHandler(sys.stdout)
-ch.setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
-logger.addHandler(ch)
 
 class WhatsAppService(object):
     whatsAppPhone = None
@@ -44,6 +40,9 @@ class WhatsAppService(object):
         logger.info("    Stopping WhatsApp service...")
         self.stack.stop()
 
+    def sendTextMessage(self,sendFrom, sendTo, text):
+        self.stack.layer.sendTextMessage(sendTo, text)
+    
     def checkAlive(self):
         if not self.thread.isAlive():
             logger.info("    WhatsApp service is not alive. Restarting...")

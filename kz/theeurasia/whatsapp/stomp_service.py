@@ -3,7 +3,6 @@
 '''
 import json
 import logging
-import sys
 
 import stomp
 from stomp.exception import ConnectFailedException
@@ -11,15 +10,16 @@ from stomp.exception import ConnectFailedException
 import functions
 
 
-ch = logging.StreamHandler(sys.stdout)
-ch.setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
-logger.addHandler(ch)
 
 class MessagesListener(object):
+
     recivedCount = 0;
     errorCount = 0
     whatsAppService = None
+
+    def __init__(self, whatsAppService):
+        self.whatsAppService = whatsAppService
 
     def on_error(self, headers, message):
         self.errorCount += 1
@@ -29,12 +29,39 @@ class MessagesListener(object):
         self.recivedCount += 1
         self.sendMessageToWhastapp(headers, message)
 
-    def sendMessageToWhastapp(self, headers, message):
-        print('Sending message "%s"' % message)
-        pass
+#        messages = [
+#                       {
+#                        'message' : {
+#                                         'from' : messageFrom,
+#                                         'to': self.whatsAppPhone,
+#                                         'sent': functions.convertTimeStampToText(timestamp),
+#                                         'type': 'text',
+#                                         'content' : {
+#                                                      'text': text
+#                                                      }
+#                                     }
+#                        }
+#                    ]
 
-    def setWhatsAppService(self, whatsAppService):
-        self.whatsAppService = whatsAppService
+    def sendMessageToWhastapp(self, headers, message):
+        msg = json.loads(message)
+        sendTo = msg['to']
+        sendFrom = msg['from']
+        msgType = msg['type']
+        content = msg['content']
+        if msgType == 'text':
+            text = content['text']
+            self.whatsAppService.sendTextMessage(sendFrom, sendTo, text)
+
+
+class StompServiceException(object):
+    __message = None
+
+    def __init__(self,message):
+        self.__message = message
+
+    def getMessage(self):
+        return self.__message
 
 class StompService(object):
     stompHost = None
@@ -70,10 +97,10 @@ class StompService(object):
         logger.info("    Starting Stomp service...")
         try:
             self.connection = stomp.Connection([(self.stompHost, self.stompPort)])
-            listener = MessagesListener()
-            if self.whatsAppService:
-                listener.setWhatsAppService(self.whatsAppService)
-            self.connection.set_listener('messages', MessagesListener())
+            if not self.whatsAppService:
+                raise StompServiceException("WhatsApp service is not set")
+            listener = MessagesListener(self.whatsAppService)
+            self.connection.set_listener('messages', listener)
             self.connection.start()
             self.connection.connect(self.stompLogin, self.stompPassword, wait=True)
             if self.stompListeningDestinations:
@@ -94,44 +121,36 @@ class StompService(object):
 
     def forwardTextMessage(self, messageFrom, text, timestamp):
         dest = self.stompWhatsAppDestinationInboxPrefix + '.' + messageFrom
-        messages = [
-                       {
-                        'message' : {
-                                         'from' : messageFrom,
-                                         'to': self.whatsAppPhone,
-                                         'sent': functions.convertTimeStampToText(timestamp),
-                                         'type': 'text',
-                                         'content' : {
-                                                      'text': text
-                                                      }
-                                     }
-                        }
-                    ]
-        jsonCode = json.dumps(messages, indent=4)
+        message = {
+                    'from' : messageFrom,
+                    'to': self.whatsAppPhone,
+                    'sent': functions.convertTimeStampToText(timestamp),
+                    'type': 'text',
+                    'content' : {
+                                 'text': text
+                                 }
+                    }
+        jsonCode = json.dumps(message, indent=4)
         self.connection.send(dest, jsonCode)
         logger.debug("Forwared message to ActiveMQ queue: '" + dest + "' FROM: " + messageFrom + " TEXT: " + text)
 
     def forwardImageURL(self, messageFrom, url, caption, fileName, mimeType, size, timestamp):
         dest = self.stompWhatsAppDestinationInboxPrefix + '.' + messageFrom
-        messages = [
-                       {
-                        'message' : {
-                                         'from' : messageFrom,
-                                         'to': self.whatsAppPhone,
-                                         'sent': functions.convertTimeStampToText(timestamp),
-                                         'type': 'image',
-                                         'content' : {
-                                                    'caption' : caption,
-                                                    'fileName': fileName,
-                                                    'mimeType' : mimeType,
-                                                    'fileSize' : size,
-                                                    'url': url,
-                                                    }
-                                     }
-                        }
-                    ]
+        message =  {
+                    'from' : messageFrom,
+                    'to': self.whatsAppPhone,
+                    'sent': functions.convertTimeStampToText(timestamp),
+                    'type': 'image',
+                    'content' : {
+                                 'caption' : caption,
+                                 'fileName': fileName,
+                                 'mimeType' : mimeType,
+                                 'fileSize' : size,
+                                 'url': url,
+                                 }
+                    }
 
-        jsonCode = json.dumps(messages, indent=4)
+        jsonCode = json.dumps(message, indent=4)
         self.connection.send(dest, jsonCode)
         logger.debug("Forwared Image to ActiveMQ queue: %s FROM: %s URL %s CAPTION: %s FILENAME: %s MIME TYPE: %s SIZE: %s " % (dest, messageFrom, url, caption, fileName, mimeType, size))
 

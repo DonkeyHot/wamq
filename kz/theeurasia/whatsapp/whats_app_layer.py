@@ -3,7 +3,6 @@
 @author: vadim.isaev
 '''
 import logging
-import sys
 
 from yowsup.layers.interface import YowInterfaceLayer, ProtocolEntityCallback
 from yowsup.layers.protocol_acks.protocolentities.ack_outgoing import OutgoingAckProtocolEntity
@@ -11,10 +10,7 @@ from yowsup.layers.protocol_messages.protocolentities import TextMessageProtocol
 from yowsup.layers.protocol_receipts.protocolentities.receipt_outgoing import OutgoingReceiptProtocolEntity
 
 
-ch = logging.StreamHandler(sys.stdout)
-ch.setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
-logger.addHandler(ch)
 
 class WhatsAppLayer(YowInterfaceLayer):
 
@@ -95,3 +91,16 @@ class WhatsAppLayer(YowInterfaceLayer):
 
     def onLocationMessage(self, entity):
         self.sendUnsupported(entity, "Точки местоположения не поддерживаются")
+
+    def sendTextMessage(self, msgTo, text):
+        phone = self.normalizeJid(msgTo)
+        entity = TextMessageProtocolEntity(text, to=phone)
+        self.toLower(entity)
+
+    def normalizeJid(self, phone):
+        if '@' in phone:
+            return phone
+        elif '-' in phone:
+            return "%s@g.us" % phone
+        else:
+            return "%s@s.whatsapp.net" % phone

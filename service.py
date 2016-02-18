@@ -7,16 +7,15 @@ import logging
 import sys
 import time
 
-from kz.theeurasia.whatsapp.stomp_service import StompService
+from kz.theeurasia.whatsapp.stomp_service import StompService, \
+    StompServiceException
 from kz.theeurasia.whatsapp.whats_app_service import WhatsAppService
 
+#    filename='service.log'
+#    stream=sys.stdout
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s %(message)s')
 
-logging.basicConfig(filename='service.log', level=logging.INFO)
-
-ch = logging.StreamHandler(sys.stdout)
-ch.setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
-logger.addHandler(ch)
 
 class Service(object):
     whatsAppPhone = '77010359568'
@@ -52,10 +51,15 @@ class Service(object):
 
     def start(self):
         logger.info("Starting services...")
-        if self.stompService:
-            self.stompService.start()
-        if self.whatsAppService:
-            self.whatsAppService.start()
+        try:
+            if self.stompService:
+                self.stompService.start()
+            if self.whatsAppService:
+                self.whatsAppService.start()
+            return True
+        except StompServiceException as e:
+            logger.error(e.getMessage())
+            return False
 
     def loop(self):
         while True:
@@ -79,6 +83,8 @@ class Service(object):
 
 if __name__ == "__main__":
     run = Service()
-    run.start()
+    if not run.start():
+        run.stop()
+        sys.exit(1)
     run.loop()
     run.stop()

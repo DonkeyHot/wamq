@@ -2,7 +2,6 @@
 @author: vadim.isaev
 '''
 import logging
-import sys
 
 from yowsup import env
 from yowsup.common.constants import YowConstants
@@ -13,19 +12,27 @@ from yowsup.layers.axolotl.layer import YowAxolotlLayer
 from yowsup.layers.coder.layer import YowCoderLayer
 from yowsup.layers.network.layer import YowNetworkLayer
 from yowsup.layers.protocol_acks.layer import YowAckProtocolLayer
+from yowsup.layers.protocol_iq.layer import YowIqProtocolLayer
 from yowsup.layers.protocol_media.layer import YowMediaProtocolLayer
 from yowsup.layers.protocol_messages.layer import YowMessagesProtocolLayer
 from yowsup.layers.protocol_receipts.layer import YowReceiptProtocolLayer
 from yowsup.stacks import YOWSUP_CORE_LAYERS
-from yowsup.stacks.yowstack import YowStack
 
 from kz.theeurasia.whatsapp.whats_app_layer import WhatsAppLayer
+from yowsup.stacks.yowstack import YowStack
 
 
-ch = logging.StreamHandler(sys.stdout)
-ch.setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
-logger.addHandler(ch)
+
+
+class WhatsAppException(object):
+    _msg = None
+
+    def __init__(self, msg):
+        self._msg =  msg
+
+    def getMessage(self):
+        return self._msg
 
 class WhatsAppStack(object):
 
@@ -47,18 +54,12 @@ class WhatsAppStack(object):
 
 
     def findWhatsAppLayerInStack(self):
-        layer = None
-        i = 0
-        while (True):
-            layer = self.yowsupStack.getLayer(i)
-            if layer != None and layer.__class__ == WhatsAppLayer:
-                return layer
-            i += 1
-        return None
-
-    def setupWhatsAppLayer(self, layer):
-        layer.setStompService(self.stompService)
-        layer.setAutoReply(self.autoReply)
+        self.layer = None
+        for i in range(0, 100):
+            self.layer = self.yowsupStack.getLayer(i)
+            if self.layer != None and self.layer.__class__ == WhatsAppLayer:
+                return
+        raise WhatsAppException("Can't find WhatsAppLayer in Stack")
 
     def start(self):
         layers = (
@@ -68,7 +69,8 @@ class WhatsAppStack(object):
                                     YowMessagesProtocolLayer,
                                     YowMediaProtocolLayer,
                                     YowReceiptProtocolLayer,
-                                    YowAckProtocolLayer
+                                    YowAckProtocolLayer,
+                                    YowIqProtocolLayer
                                     ]),
                   YowAxolotlLayer
         ) + YOWSUP_CORE_LAYERS
@@ -79,7 +81,9 @@ class WhatsAppStack(object):
         self.yowsupStack.setProp(YowCoderLayer.PROP_DOMAIN, YowConstants.DOMAIN)
         self.yowsupStack.setProp(YowCoderLayer.PROP_RESOURCE, env.CURRENT_ENV.getResource())  # info about us as WhatsApp client
 
-        self.setupWhatsAppLayer(self.findWhatsAppLayerInStack())
+        self.findWhatsAppLayerInStack()
+        self.layer.setStompService(self.stompService)
+        self.layer.setAutoReply(self.autoReply)
 
         self.yowsupStack.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_CONNECT))  # sending the connect signal
         try:

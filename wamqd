@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# chkconfig: 35 90 12
+# chkconfig: 2345 60 70
 # description: WAMQ server
 #
 # Get function from functions library
@@ -8,25 +8,41 @@
 SYSTEMCTL_SKIP_REDIRECT=1
 . /etc/init.d/functions
 
+lockfile=/var/lock/subsys/wamq
 user=wamq
+
 # Start the service WAMQ server
 start() {
 	echo -n "Starting WAMQ server:"
-        cd /opt/wamq
-        sudo -u $user wamq &
-        ### Create the lock file ###
-        touch /var/lock/subsys/wamq
-        success
-	echo
+	if [ -f $lockfile ];
+	then
+	    failure
+	    echo
+	    echo "Service is already started"
+	else
+	    cd /opt/wamq
+	    sudo -u $user wamq &
+	    ### Create the lock file ###
+	    touch $lockfile
+	    success
+	    echo
+	fi
 }
 # Restart the service FOO
 stop() {
 	echo -n "Stopping WAMQ server:"
-        killall -u $user
-        ### Now, delete the lock file ###
-        rm -f /var/lock/subsys/WAMQ
-        success
-	echo
+	if [ -f $lockfile ];
+	then
+	    killall -u $user
+	    ### Now, delete the lock file ###
+	    rm -f $lockfile
+	    success
+	    echo
+	else
+	    failure
+	    echo
+	    echo "Service is not started"
+	fi
 }
 ### main logic ###
 case "$1" in

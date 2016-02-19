@@ -1,62 +1,109 @@
-#!/bin/bash
+#!/bin/sh
+#
+# /etc/init.d/wamqd
+# Startup script for WAMQ service
 #
 # chkconfig: 2345 60 70
-# description: WAMQ server
+# description: WAMQ service daemon
 #
-# Get function from functions library
+# processname: WAMQ
+# config: /etc/wamq.conf
+# pidfile: /var/run/wamq.pid
 
-SYSTEMCTL_SKIP_REDIRECT=1
-. /etc/init.d/functions
+# source function library
+. /etc/rc.d/init.d/functions
 
-lockfile=/var/lock/subsys/wamq
-user=wamq
+RETVAL=0
+TAG=wamq
+PROG="WAMQ service"
+LOCKFILE=/var/lock/subsys/$TAG
+USER=wamq
+EXEC=/usr/bin/wamq
 
-# Start the service WAMQ server
 start() {
-	echo -n "Starting WAMQ server:"
-	if [ -f $lockfile ];
-	then
-	    failure
-	    echo
-	    echo "Service is already started"
-	else
-	    cd /opt/wamq
-	    sudo -u $user wamq &
-	    ### Create the lock file ###
-	    touch $lockfile
-	    success
-	    echo
-	fi
+    echo -n $"Starting $PROG:"
+    if [ $current -eq 4 ]; # if status is 4 that means unknow state
+    then
+	failure
+	echo
+	echo "$PROG status is unknown"
+	RETVAL=8
+	return
+    fi
+    if [ $current -eq 0 ]; # if status is 0 that means running
+    then
+	failure
+	echo
+	echo "$PROG is already running"
+	RETVAL=9
+	return
+    fi
+    # START
+    daemon --user $USER $EXEC &>/dev/null &
+    RETVAL=$?
+    if [ $RETVAL -eq 0 ];
+    then
+        touch $LOCKFILE
+        success
+    else
+        failure
+    fi
+    echo
 }
-# Restart the service FOO
+
 stop() {
-	echo -n "Stopping WAMQ server:"
-	if [ -f $lockfile ];
-	then
-	    killall -u $user
-	    ### Now, delete the lock file ###
-	    rm -f $lockfile
-	    success
-	    echo
-	else
-	    failure
-	    echo
-	    echo "Service is not started"
-	fi
+    echo -n $"Stopping $PROG:"
+    if [ $current -eq 4 ]; # if status is 4 that means unknow state
+    then
+	failure
+	echo
+	echo "$PROG status is unknown"
+	RETVAL=8
+	return
+    fi
+    if [[ "$current" == [123] ]]; # if status is one of the 1, 2, 3 that means dead
+    then
+	failure
+	echo
+	echo "$PROG is not started"
+	RETVAL=9
+	return
+    fi
+    # STOP
+    killproc $TAG -TERM
+    RETVAL=$?
+    if [ $RETVAL -eq 0 ];
+    then
+	rm -f $LOCKFILE
+	success
+    else
+	failure
+    fi
+    echo
 }
-### main logic ###
+
+status $TAG >/dev/null 2>/dev/null
+current=$?
+# 0 is running
+# 1 dead but pid file exists
+# 2 dead but subsys locked
+# 3 stopped
+# 4 unknown status
+
 case "$1" in
-  start)
-        start
-        ;;
-  stop)
-        stop
-        ;;
-  status)
-        status WAMQ
-        ;;
-  *)
-        echo $"Usage: $0 {start|stop|status}"
-        exit 1
+    start)
+	start
+	;;
+    stop)
+	stop
+	;;
+    status)
+	status $TAG
+	RETVAL=$?
+	;;
+    *)
+	echo $"Usage: $0 {start|stop|status}"
+	RETVAL=1
 esac
-exit 0
+
+exit $RETVAL

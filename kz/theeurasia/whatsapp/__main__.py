@@ -54,12 +54,9 @@ class MainService(object):
             return False
 
     def stopLoopGracefully(self):
-        logger.info("SIGTERM received. Stopping...")
         self.loopMustContinue = False
 
     def loop(self):
-        signal.signal(signal.SIGTERM, self.stopLoopGracefully)
-        signal.signal(signal.SIGINT, self.stopLoopGracefully)
         self.loopMustContinue = True
         while self.loopMustContinue:
             try:
@@ -195,6 +192,14 @@ class MainService(object):
         self.stop()
         return True
 
+def stopLoopGracefully():
+    global mainService
+    logger.info("SIGTERM received. Stopping...")
+    mainService.stopLoopGracefully()
+
 if __name__ == "__main__":
+    global mainService
+    signal.signal(signal.SIGTERM, stopLoopGracefully)
+    signal.signal(signal.SIGINT, stopLoopGracefully)
     mainService = MainService()
     sys.exit(mainService.run())

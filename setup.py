@@ -9,16 +9,16 @@ import kz.theeurasia.whatsapp
 deps = ['yowsup2']
 
 setup(
-    name='whatsapp-mq-whatsapp_mq_service',
+    name='wamq',
     version=kz.theeurasia.whatsapp.__version__,
-    url='https://gitrepo.theeurasia.kz/vadim.isaev/whatsapp-mq-service',
+    url='https://gitrepo.theeurasia.kz/eurasia/wamq',
     author=kz.theeurasia.whatsapp.__author__,
     tests_require=[],
     install_requires = deps,
     scripts = ['wamq', 'wamq.py'],
     #cmdclass={'test': PyTest},
     author_email='vadim.o.isaev@gmail.com',
-    description='Whatsap to MQ whatsapp_mq_service mapper',
+    description='Whatsap to MQ services mapper',
     #long_description=long_description,
     packages= find_packages(),
     include_package_data=True,

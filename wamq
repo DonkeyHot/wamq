@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
 @author: vadim.isaev
 '''

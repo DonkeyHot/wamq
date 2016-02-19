@@ -15,8 +15,8 @@
 WAMQ_WORKDIR="/opt/wamq"
 WAMQ_EXEC="/usr/bin/wamqd"
 WAMQ_DESCR="WAMQ service"
-WAMQ_TAG="wamq"
-WAMQ_LOCKFILE="/var/lock/subsys/$WAMQ_TAG"
+WAMQ_PROC="wamqd"
+WAMQ_LOCKFILE="/var/lock/subsys/$WAMQ_PROC"
 WAMQ_USER="wamq"
 
 RETVAL=0
@@ -27,7 +27,7 @@ RETVAL=0
 # 2 dead but subsys locked
 # 3 stopped
 # 4 unknown status
-status $WAMQ_TAG >/dev/null 2>/dev/null
+status $WAMQ_PROC >/dev/null 2>/dev/null
 current=$?
 
 start() {
@@ -81,7 +81,7 @@ stop() {
 	return
     fi
     # STOP
-    killproc $WAMQ_TAG -TERM
+    killproc $WAMQ_PROC -TERM
     RETVAL=$?
     if [ $RETVAL -eq 0 ];
     then
@@ -101,7 +101,7 @@ case "$1" in
 	stop
 	;;
     status)
-	status $WAMQ_TAG
+	status $WAMQ_PROC
 	RETVAL=$?
 	;;
     *)

@@ -4,26 +4,29 @@
 # description: WAMQ server
 #
 # Get function from functions library
+
+SYSTEMCTL_SKIP_REDIRECT=1
 . /etc/init.d/functions
 
 user=wamq
 # Start the service WAMQ server
 start() {
-		### initlog -c "echo -n Starting WAMQ server: "
+	echo -n "Starting WAMQ server:"
         cd /opt/wamq
         sudo -u $user wamq &
         ### Create the lock file ###
         touch /var/lock/subsys/wamq
-        success $"WAMQ server startup"
-        echo
+        success
+	echo
 }
 # Restart the service FOO
 stop() {
-        ### initlog -c "echo -n Stopping WAMQ server: "
+	echo -n "Stopping WAMQ server:"
         killall -u $user
         ### Now, delete the lock file ###
         rm -f /var/lock/subsys/WAMQ
-        echo
+        success
+	echo
 }
 ### main logic ###
 case "$1" in

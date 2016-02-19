@@ -71,4 +71,4 @@ target/
 # Mac OS X service directories
 .DS_Store
 
-whatsapp_mq_service.conf
+wamq.conf

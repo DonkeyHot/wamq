@@ -4,6 +4,7 @@
 '''
 
 import logging
+import platform
 import signal
 import sys
 import time
@@ -53,7 +54,7 @@ class MainService(object):
             logger.error(e.getMessage())
             return False
 
-    def stopLoopGracefully(self):
+    def signalHandler(self):
         self.loopMustContinue = False
 
     def loop(self):
@@ -192,14 +193,17 @@ class MainService(object):
         self.stop()
         return True
 
-def stopLoopGracefully():
+def signalHandler(signum, frame):
     global mainService
-    logger.info("SIGTERM received. Stopping...")
+    logger.info("%s received. Stopping..." % signum)
     mainService.stopLoopGracefully()
 
 if __name__ == "__main__":
     global mainService
-    signal.signal(signal.SIGTERM, stopLoopGracefully)
-    signal.signal(signal.SIGINT, stopLoopGracefully)
+    if platform.system().lower() != "windows":
+        signal.signal(1, signalHandler)  # SIGHUP    1    Завершение    Закрытие терминала
+        signal.signal(9, signalHandler)  # SIGKILL    9    Завершение    Безусловное завершение
+    signal.signal(signal.SIGTERM, signalHandler)  # SIGTERM    15    Завершение    Сигнал завершения (сигнал по умолчанию для утилиты kill)
+    signal.signal(signal.SIGINT, signalHandler)  # SIGINT    2    Завершение    Сигнал прерывания (Ctrl-C) с терминала
     mainService = MainService()
     sys.exit(mainService.run())

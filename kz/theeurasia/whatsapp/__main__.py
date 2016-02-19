@@ -54,6 +54,7 @@ class MainService(object):
             return False
 
     def stopLoopGracefully(self):
+        logger.info("SIGTERM received. Stopping...")
         self.loopMustContinue = False
 
     def loop(self):

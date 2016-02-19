@@ -58,15 +58,15 @@ class MainService(object):
         self.loopMustContinue = False
 
     def loop(self):
-        signal.signal(signal.SIGTERM, self.stopLoopGracefully())
-        signal.signal(signal.SIGINT, self.stopLoopGracefully())
+        signal.signal(signal.SIGTERM, self.stopLoopGracefully)
+        signal.signal(signal.SIGINT, self.stopLoopGracefully)
         self.loopMustContinue = True
         while self.loopMustContinue:
             try:
                 self.stompService.checkAlive()
                 self.whatsAppService.checkAlive()
                 time.sleep(1)
-            except (KeyboardInterrupt, SystemExit):
+            except (KeyboardInterrupt):
                 logger.info("CLIENT: Interrupted")
                 break
             except SystemExit:

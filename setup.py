@@ -15,7 +15,7 @@ setup(
     author=kz.theeurasia.whatsapp.__author__,
     tests_require=[],
     install_requires = deps,
-    scripts = ['wamq', 'wamq.py'],
+    scripts = ['wamq', 'wamq.py', 'wamqd'],
     #cmdclass={'test': PyTest},
     author_email='vadim.o.isaev@gmail.com',
     description='Whatsap to MQ services mapper',

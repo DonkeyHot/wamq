@@ -8,7 +8,8 @@
 # Start the service WAMQ server
 start() {
         initlog -c "echo -n Starting WAMQ server: "
-        wamq &
+        cd /opt/wamq
+        sudo -u wamq wamq &
         ### Create the lock file ###
         touch /var/lock/subsys/wamq
         success $"WAMQ server startup"

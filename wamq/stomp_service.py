@@ -43,7 +43,7 @@ class MessagesListener(object):
 class StompServiceException(object):
     __message = None
 
-    def __init__(self,message):
+    def __init__(self, message):
         self.__message = message
 
     def getMessage(self):
@@ -54,6 +54,7 @@ class StompService(object):
     stompPort = None
     stompLogin = None
     stompPassword = None
+    stompReconnectionAttemps = None
     stompListeningDestinations = None
     stompWhatsAppDestinationInboxPrefix = None
     whatsAppPhone = None
@@ -65,6 +66,7 @@ class StompService(object):
                  stompPort,
                  stompLogin,
                  stompPassword,
+                 stompReconnectionAttemps,
                  stompListeningDestinations,
                  stompWhatsAppDestinationInboxPrefix,
                  whatsAppPhone):
@@ -72,6 +74,7 @@ class StompService(object):
         self.stompPort = stompPort
         self.stompLogin = stompLogin
         self.stompPassword = stompPassword
+        self.stompReconnectionAttemps = stompReconnectionAttemps
         self.stompListeningDestinations = stompListeningDestinations
         self.stompWhatsAppDestinationInboxPrefix = stompWhatsAppDestinationInboxPrefix
         self.whatsAppPhone = whatsAppPhone
@@ -79,10 +82,36 @@ class StompService(object):
     def setWhatsAppService(self, whatsAppService):
         self.whatsAppService = whatsAppService
 
+
+
+#                 host_and_ports=None,
+#                 prefer_localhost=True,
+#                 try_loopback_connect=True,
+#                 reconnect_sleep_initial=0.1,
+#                 reconnect_sleep_increase=0.5,
+#                 reconnect_sleep_jitter=0.1,
+#                 reconnect_sleep_max=60.0,
+#                 reconnect_attempts_max=3,
+#                 use_ssl=False,
+#                 ssl_key_file=None,
+#                 ssl_cert_file=None,
+#                 ssl_ca_certs=None,
+#                 ssl_cert_validator=None,
+#                 wait_on_receipt=False,
+#                 ssl_version=DEFAULT_SSL_VERSION,
+#                 timeout=None,
+#                 heartbeats=(0, 0),
+#                 keepalive=None,
+#                 vhost=None,
+#                 auto_decode=True,
+#                 auto_content_length=True):
+
     def start(self):
         logger.info("Starting Stomp service...")
         try:
-            self.connection = stomp.Connection([(self.stompHost, self.stompPort)])
+            self.connection = stomp.Connection(
+                                               [(self.stompHost, self.stompPort)],
+                                               reconnect_attempts_max=self.stompReconnectionAttemps)
             if not self.whatsAppService:
                 raise StompServiceException("WhatsApp service is not set")
             listener = MessagesListener(self.whatsAppService)
@@ -122,7 +151,7 @@ class StompService(object):
 
     def forwardImageURL(self, messageFrom, url, caption, fileName, mimeType, size, timestamp):
         dest = self.stompWhatsAppDestinationInboxPrefix + '.' + messageFrom
-        message =  {
+        message = {
                     'from' : messageFrom,
                     'to': self.whatsAppPhone,
                     'sent': functions.convertTimeStampToText(timestamp),

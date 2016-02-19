@@ -33,6 +33,7 @@ class MainService(object):
     stompPort = None  # non mandatory
     stompLogin = None  # mandatory
     stompPassword = None  # mandatory
+    stompReconnectionAttemps = None # mandatory
 
     stompListeningDestinations = []
     stompWhatsAppDestinationInboxPrefix = None
@@ -118,6 +119,8 @@ class MainService(object):
             self.stompLogin = param['stompLogin']
         if 'stompPassword'  in param:
             self.stompPassword = param['stompPassword']
+        if 'stompReconnectionAttemps' in param:
+            self.stompReconnectionAttemps = param['stompReconnectionAttemps']
         for i in range(1, 10):
             key = 'stompListeningDestination.%s' % i;
             if not key in param:
@@ -152,6 +155,9 @@ class MainService(object):
         if not self.stompPassword:
             logger.error("Parameter 'stompPassword' is not set")
             configOk = False
+        if not self.stompReconnectionAttemps:
+            logger.error("Parameter 'stompReconnectionAttemps' is not set")
+            configOk = False
         if not self.stompWhatsAppDestinationInboxPrefix:
             logger.error("Parameter 'stompWhatsAppDestinationInboxPrefix' is not set")
             configOk = False
@@ -167,6 +173,7 @@ class MainService(object):
                                        self.stompPort,
                                        self.stompLogin,
                                        self.stompPassword,
+                                       self.stompReconnectionAttemps,
                                        self.stompListeningDestinations,
                                        self.stompWhatsAppDestinationInboxPrefix,
                                        self.whatsAppPhone)

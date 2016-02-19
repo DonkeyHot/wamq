@@ -5,11 +5,13 @@
 #
 # Get function from functions library
 . /etc/init.d/functions
+
+user=wamq
 # Start the service WAMQ server
 start() {
-        initlog -c "echo -n Starting WAMQ server: "
+		### initlog -c "echo -n Starting WAMQ server: "
         cd /opt/wamq
-        sudo -u wamq wamq &
+        sudo -u $user wamq &
         ### Create the lock file ###
         touch /var/lock/subsys/wamq
         success $"WAMQ server startup"
@@ -17,8 +19,8 @@ start() {
 }
 # Restart the service FOO
 stop() {
-        initlog -c "echo -n Stopping WAMQ server: "
-        killproc WAMQ
+        ### initlog -c "echo -n Stopping WAMQ server: "
+        killall -u $user
         ### Now, delete the lock file ###
         rm -f /var/lock/subsys/WAMQ
         echo
@@ -34,12 +36,8 @@ case "$1" in
   status)
         status WAMQ
         ;;
-  restart|reload|condrestart)
-        stop
-        start
-        ;;
   *)
-        echo $"Usage: $0 {start|stop|restart|reload|status}"
+        echo $"Usage: $0 {start|stop|status}"
         exit 1
 esac
 exit 0

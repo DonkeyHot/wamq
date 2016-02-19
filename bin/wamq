@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# /etc/init.d/wamqd
+# /etc/init.d/wamq
 # Startup script for WAMQ service
 #
 # chkconfig: 2345 60 70
@@ -8,7 +8,6 @@
 #
 # processname: WAMQ
 # config: /etc/wamq.conf
-# pidfile: /var/run/wamq.pid
 
 # source function library
 . /etc/rc.d/init.d/functions

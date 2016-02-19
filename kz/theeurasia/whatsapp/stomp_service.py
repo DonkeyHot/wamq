@@ -22,25 +22,11 @@ class MessagesListener(object):
 
     def on_error(self, headers, message):
         self.errorCount += 1
-        print('received an error "%s"' % message)
+        logger.error('Received an error "%s"' % message)
 
     def on_message(self, headers, message):
         self.recivedCount += 1
         self.sendMessageToWhastapp(headers, message)
-
-#        messages = [
-#                       {
-#                        'message' : {
-#                                         'from' : messageFrom,
-#                                         'to': self.whatsAppPhone,
-#                                         'sent': functions.convertTimeStampToText(timestamp),
-#                                         'type': 'text',
-#                                         'content' : {
-#                                                      'text': text
-#                                                      }
-#                                     }
-#                        }
-#                    ]
 
     def sendMessageToWhastapp(self, headers, message):
         msg = functions.safeJsonDecode(message)
@@ -94,7 +80,7 @@ class StompService(object):
         self.whatsAppService = whatsAppService
 
     def start(self):
-        logger.info("    Starting Stomp service...")
+        logger.info("Starting Stomp service...")
         try:
             self.connection = stomp.Connection([(self.stompHost, self.stompPort)])
             if not self.whatsAppService:
@@ -105,14 +91,14 @@ class StompService(object):
             self.connection.connect(self.stompLogin, self.stompPassword, wait=True)
             if self.stompListeningDestinations:
                 for dest in self.stompListeningDestinations:
-                    logger.info("        Stomp service is listening '%s'" % dest)
+                    logger.info("Stomp service is listening '%s'" % dest)
                     self.connection.subscribe(dest, dest)
         except ConnectFailedException:
             logger.error("Connection to Stomp server failed")
             raise
 
     def stop(self):
-        logger.info("    Stopping Stomp service...")
+        logger.info("Stopping Stomp service...")
         if self.stompListeningDestinations:
             for dest in self.stompListeningDestinations:
                 self.connection.unsubscribe(dest)
@@ -132,7 +118,7 @@ class StompService(object):
                     }
         jsonCode = functions.safeJsonEncode(message)
         self.connection.send(dest, jsonCode)
-        logger.debug("Forwared message to ActiveMQ queue: '" + dest + "' FROM: " + messageFrom + " TEXT: " + text)
+        logger.info("Text message forwarded to ActiveMQ destination '%s'" % dest)
 
     def forwardImageURL(self, messageFrom, url, caption, fileName, mimeType, size, timestamp):
         dest = self.stompWhatsAppDestinationInboxPrefix + '.' + messageFrom
@@ -152,9 +138,9 @@ class StompService(object):
 
         jsonCode = functions.safeJsonEncode(message)
         self.connection.send(dest, jsonCode)
-        logger.debug("Forwared Image to ActiveMQ queue: %s FROM: %s URL %s CAPTION: %s FILENAME: %s MIME TYPE: %s SIZE: %s " % (dest, messageFrom, url, caption, fileName, mimeType, size))
+        logger.info("Image message forwarded to ActiveMQ destination '%s'" % dest)
 
     def checkAlive(self):
         if not self.connection.is_connected():
-            logger.info("    Stomp service is not alive. Restarting...")
+            logger.info("Stomp service is not alive. Restarting...")
             self.start()

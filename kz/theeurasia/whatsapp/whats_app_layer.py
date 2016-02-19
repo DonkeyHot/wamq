@@ -15,7 +15,8 @@ logger = logging.getLogger(__name__)
 class WhatsAppLayer(YowInterfaceLayer):
 
     stompService = None
-    autoReply = False
+    autoReply = None
+    replyUnsupported = None
 
     @ProtocolEntityCallback("message")
     def onMessage(self, entity):
@@ -51,6 +52,9 @@ class WhatsAppLayer(YowInterfaceLayer):
     def setAutoReply(self, autoReply):
         self.autoReply = autoReply
 
+    def setReplyUnsupported(self, replyUnsupported):
+        self.replyUnsupported = replyUnsupported
+
     def sendReceipt(self, entity):
         receipt = OutgoingReceiptProtocolEntity(entity.getId(), entity.getFrom(), 'read', entity.getParticipant())
         self.toLower(receipt)
@@ -81,21 +85,26 @@ class WhatsAppLayer(YowInterfaceLayer):
                                               entity.getTimestamp())
 
     def onAudioMessage(self, entity):
-        self.sendUnsupported(entity, "Аудио сообщения не поддерживаются")
+        if self.replyUnsupported:
+            self.sendUnsupported(entity, "Аудио сообщения не поддерживаются")
 
     def onVideoMessage(self, entity):
-        self.sendUnsupported(entity, "Видео сообщения не поддерживаются")
+        if self.replyUnsupported:
+            self.sendUnsupported(entity, "Видео сообщения не поддерживаются")
 
     def onVCardMessage(self, entity):
-        self.sendUnsupported(entity, "Визитки не поддерживаются")
+        if self.replyUnsupported:
+            self.sendUnsupported(entity, "Визитки не поддерживаются")
 
     def onLocationMessage(self, entity):
-        self.sendUnsupported(entity, "Точки местоположения не поддерживаются")
+        if self.replyUnsupported:
+            self.sendUnsupported(entity, "Точки местоположения не поддерживаются")
 
     def sendTextMessage(self, msgTo, text):
         phone = self.normalizeJid(msgTo)
         entity = TextMessageProtocolEntity(text, to=phone)
         self.toLower(entity)
+        logger.info("Message forwarded to WhatsApp '%s'" % phone)
 
     def normalizeJid(self, phone):
         if '@' in phone:

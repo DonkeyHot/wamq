@@ -39,17 +39,20 @@ class WhatsAppStack(object):
     whatsAppPhone = None
     whatsAppPassword = None
     stompService = None
-    autoReply = False
+    autoReply = None
+    replyUnsupported = None
     yowsupStack = None
 
     def __init__(self,
                  whatsAppPhone,
                  whatsAppPassword,
                  autoReply,
+                 replyUnsupported,
                  stompService):
         self.whatsAppPhone = whatsAppPhone
         self.whatsAppPassword = whatsAppPassword
         self.autoReply = autoReply
+        self.replyUnsupported = replyUnsupported
         self.stompService = stompService
 
 
@@ -84,6 +87,7 @@ class WhatsAppStack(object):
         self.findWhatsAppLayerInStack()
         self.layer.setStompService(self.stompService)
         self.layer.setAutoReply(self.autoReply)
+        self.layer.setReplyUnsupported(self.replyUnsupported)
 
         self.yowsupStack.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_CONNECT))  # sending the connect signal
         try:

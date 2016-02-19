@@ -4,7 +4,6 @@
 '''
 
 import logging
-import platform
 import signal
 import sys
 import time
@@ -54,7 +53,7 @@ class MainService(object):
             logger.error(e.getMessage())
             return False
 
-    def signalHandler(self):
+    def stopLoopGracefully(self):
         self.loopMustContinue = False
 
     def loop(self):
@@ -195,7 +194,7 @@ class MainService(object):
 
 def signalHandler(signum, frame):
     global mainService
-    logger.info("%s received. Stopping..." % signum)
+    logger.info("%s received. Stopping..." % functions.SIGNALS_TO_NAMES_DICT[signum])
     mainService.stopLoopGracefully()
 
 if __name__ == "__main__":

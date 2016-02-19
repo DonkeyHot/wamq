@@ -8,10 +8,9 @@ import signal
 import sys
 import time
 
-from kz.theeurasia.whatsapp import functions
-from kz.theeurasia.whatsapp.stomp_service import StompService, \
-    StompServiceException
-from kz.theeurasia.whatsapp.whats_app_service import WhatsAppService
+from wamq import functions
+from wamq.stomp_service import StompServiceException, StompService
+from wamq.whats_app_service import WhatsAppService
 
 
 #    filename='whatsapp_mq_service.log'

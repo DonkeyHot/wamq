@@ -18,7 +18,7 @@ TAG=wamq
 PROG="WAMQ service"
 LOCKFILE=/var/lock/subsys/$TAG
 USER=wamq
-EXEC=/usr/bin/wamq
+EXEC=/usr/bin/wamqd
 
 start() {
     echo -n $"Starting $PROG:"

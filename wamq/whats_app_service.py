@@ -4,7 +4,7 @@
 import logging
 import threading
 
-from kz.theeurasia.whatsapp.whats_app_stack import WhatsAppStack
+from wamq.whats_app_stack import WhatsAppStack
 
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ class WhatsAppService(object):
     whatsAppReplyUnsupported = None
 
     stompService = None
-    
+
     def __init__(self,
                  whatsAppPhone,
                  whatsAppPassword,
@@ -50,7 +50,7 @@ class WhatsAppService(object):
 
     def sendTextMessage(self,sendFrom, sendTo, text):
         self.stack.layer.sendTextMessage(sendTo, text)
-    
+
     def checkAlive(self):
         if not self.thread.isAlive():
             logger.info("WhatsApp service is not alive. Restarting...")

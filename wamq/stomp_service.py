@@ -6,7 +6,7 @@ import logging
 import stomp
 from stomp.exception import ConnectFailedException
 
-from kz.theeurasia.whatsapp import functions
+from wamq import functions
 
 
 logger = logging.getLogger(__name__)

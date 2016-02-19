@@ -10,6 +10,7 @@
 # config: /etc/wamq.conf
 
 # source function library
+SYSTEMCTL_SKIP_REDIRECT=yes
 . /etc/rc.d/init.d/functions
 
 WAMQ_WORKDIR="/opt/wamq"

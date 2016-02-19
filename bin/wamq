@@ -13,20 +13,31 @@
 # source function library
 . /etc/rc.d/init.d/functions
 
+WAMQ_WORKDIR="/opt/wamq"
+WAMQ_EXEC="/usr/bin/wamqd"
+WAMQ_DESCR="WAMQ service"
+WAMQ_TAG="wamq"
+WAMQ_LOCKFILE="/var/lock/subsys/$WAMQ_TAG"
+WAMQ_USER="wamq"
+
 RETVAL=0
-TAG=wamq
-PROG="WAMQ service"
-LOCKFILE=/var/lock/subsys/$TAG
-USER=wamq
-EXEC=/usr/bin/wamqd
+
+# Checking current status
+# 0 is running
+# 1 dead but pid file exists
+# 2 dead but subsys locked
+# 3 stopped
+# 4 unknown status
+status $WAMQ_TAG >/dev/null 2>/dev/null
+current=$?
 
 start() {
-    echo -n $"Starting $PROG:"
+    echo -n $"Starting $WAMQ_DESCR:"
     if [ $current -eq 4 ]; # if status is 4 that means unknow state
     then
 	failure
 	echo
-	echo "$PROG status is unknown"
+	echo "$WAMQ_DESCR status is unknown"
 	RETVAL=8
 	return
     fi
@@ -34,16 +45,17 @@ start() {
     then
 	failure
 	echo
-	echo "$PROG is already running"
+	echo "$WAMQ_DESCR is already running"
 	RETVAL=9
 	return
     fi
     # START
-    daemon --user $USER $EXEC &>/dev/null &
+    cd $WAMQ_WORKDIR
+    daemon --user $WAMQ_USER $WAMQ_EXEC &>/dev/null &
     RETVAL=$?
     if [ $RETVAL -eq 0 ];
     then
-        touch $LOCKFILE
+        touch $WAMQ_LOCKFILE
         success
     else
         failure
@@ -52,12 +64,12 @@ start() {
 }
 
 stop() {
-    echo -n $"Stopping $PROG:"
+    echo -n $"Stopping $WAMQ_DESCR:"
     if [ $current -eq 4 ]; # if status is 4 that means unknow state
     then
 	failure
 	echo
-	echo "$PROG status is unknown"
+	echo "$WAMQ_DESCR status is unknown"
 	RETVAL=8
 	return
     fi
@@ -65,30 +77,22 @@ stop() {
     then
 	failure
 	echo
-	echo "$PROG is not started"
+	echo "$WAMQ_DESCR is not started"
 	RETVAL=9
 	return
     fi
     # STOP
-    killproc $TAG -TERM
+    killproc $WAMQ_TAG -TERM
     RETVAL=$?
     if [ $RETVAL -eq 0 ];
     then
-	rm -f $LOCKFILE
+	rm -f $WAMQ_LOCKFILE
 	success
     else
 	failure
     fi
     echo
 }
-
-status $TAG >/dev/null 2>/dev/null
-current=$?
-# 0 is running
-# 1 dead but pid file exists
-# 2 dead but subsys locked
-# 3 stopped
-# 4 unknown status
 
 case "$1" in
     start)
@@ -98,7 +102,7 @@ case "$1" in
 	stop
 	;;
     status)
-	status $TAG
+	status $WAMQ_TAG
 	RETVAL=$?
 	;;
     *)

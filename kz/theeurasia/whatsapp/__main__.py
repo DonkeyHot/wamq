@@ -4,13 +4,14 @@
 '''
 
 import logging
+import signal
 import sys
 import time
 
+from kz.theeurasia.whatsapp import functions
 from kz.theeurasia.whatsapp.stomp_service import StompService, \
     StompServiceException
 from kz.theeurasia.whatsapp.whats_app_service import WhatsAppService
-from kz.theeurasia.whatsapp import functions
 
 
 #    filename='whatsapp_mq_service.log'
@@ -19,10 +20,11 @@ logging.basicConfig(filename='wamq.log', level=logging.INFO, format='%(asctime)s
 
 logger = logging.getLogger(__name__)
 
-
 class MainService(object):
 
     configs = ['wamq.conf', '~/wamq.conf', '/etc/wamq.conf']
+
+    loopMustContinue = True
 
     whatsAppPhone = None  # mandatory
     whatsAppPassword = None  # mandatory
@@ -51,8 +53,14 @@ class MainService(object):
             logger.error(e.getMessage())
             return False
 
+    def stopLoopGracefully(self):
+        self.loopMustContinue = False
+
     def loop(self):
-        while True:
+        signal.signal(signal.SIGTERM, self.stopLoopGracefully())
+        signal.signal(signal.SIGINT, self.stopLoopGracefully())
+        self.loopMustContinue = True
+        while self.loopMustContinue:
             try:
                 self.stompService.checkAlive()
                 self.whatsAppService.checkAlive()

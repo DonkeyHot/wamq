@@ -14,7 +14,7 @@ SYSTEMCTL_SKIP_REDIRECT=yes
 . /etc/rc.d/init.d/functions
 
 WAMQ_WORKDIR="/opt/wamq"
-WAMQ_EXEC="/usr/bin/wamqd"
+WAMQ_EXEC="wamqd"
 WAMQ_DESCR="WAMQ service"
 WAMQ_PROC="wamqd"
 WAMQ_LOCKFILE="/var/lock/subsys/$WAMQ_PROC"

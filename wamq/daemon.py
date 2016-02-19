@@ -179,6 +179,8 @@ class MainService(object):
         self.whatsAppService.setStompService(self.stompService)
 
     def run(self):
+        signal.signal(signal.SIGTERM, signalHandler)  # SIGTERM    15    Завершение    Сигнал завершения (сигнал по умолчанию для утилиты kill)
+        signal.signal(signal.SIGINT, signalHandler)  # SIGINT    2    Завершение    Сигнал прерывания (Ctrl-C) с терминала
         if not self.config():
             logger.error("Exiting")
             return False
@@ -196,9 +198,10 @@ def signalHandler(signum, frame):
     logger.info("%s received. Stopping..." % functions.SIGNALS_TO_NAMES_DICT[signum])
     mainService.stopLoopGracefully()
 
-if __name__ == "__main__":
+def run():
     global mainService
-    signal.signal(signal.SIGTERM, signalHandler)  # SIGTERM    15    Завершение    Сигнал завершения (сигнал по умолчанию для утилиты kill)
-    signal.signal(signal.SIGINT, signalHandler)  # SIGINT    2    Завершение    Сигнал прерывания (Ctrl-C) с терминала
     mainService = MainService()
     sys.exit(mainService.run())
+
+if __name__ == "__main__":
+    run()

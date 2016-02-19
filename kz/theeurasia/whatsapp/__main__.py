@@ -10,24 +10,25 @@ import time
 from kz.theeurasia.whatsapp.stomp_service import StompService, \
     StompServiceException
 from kz.theeurasia.whatsapp.whats_app_service import WhatsAppService
+from kz.theeurasia.whatsapp import functions
 
 
 #    filename='whatsapp_mq_service.log'
 #    stream=sys.stdout
-logging.basicConfig(filename='whatsapp_mq_service.log', level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s %(message)s')
+logging.basicConfig(filename='wamq.log', level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s %(message)s')
 
 logger = logging.getLogger(__name__)
 
 
 class MainService(object):
 
-    configs = ['~/whatsapp_mq_service.conf', './whatsapp_mq_service.conf', '/etc/whatsapp_mq_service.conf']
+    configs = ['wamq.conf', '~/wamq.conf', '/etc/wamq.conf']
 
     whatsAppPhone = None  # mandatory
     whatsAppPassword = None  # mandatory
     whatsAppAutoReply = True  # non mandatory
     whatsAppReplyUnsupported = True  # non mandatory
-    stompHost = None # non mandatory
+    stompHost = None  # non mandatory
     stompPort = None  # non mandatory
     stompLogin = None  # mandatory
     stompPassword = None  # mandatory
@@ -37,23 +38,6 @@ class MainService(object):
 
     whatsAppService = None
     stompService = None
-
-    def __init__(self):
-        self.stompService = StompService(
-                                       self.stompHost,
-                                       self.stompPort,
-                                       self.stompLogin,
-                                       self.stompPassword,
-                                       self.stompListeningDestinations,
-                                       self.stompWhatsAppDestinationInboxPrefix,
-                                       self.whatsAppPhone)
-        self.whatsAppService = WhatsAppService(
-                                               self.whatsAppPhone,
-                                               self.whatsAppPassword,
-                                               self.whatsAppAutoReply,
-                                               self.whatsAppReplyUnsupported)
-        self.stompService.setWhatsAppService(self.whatsAppService)
-        self.whatsAppService.setStompService(self.stompService)
 
     def start(self):
         logger.info("Starting services...")
@@ -90,6 +74,7 @@ class MainService(object):
     def loadConfig(self):
         for config in self.configs:
             try:
+                logger.info("Attemping to load configuration from %s" % config)
                 f = open(config)
                 param = {}
                 for l in f:
@@ -99,6 +84,8 @@ class MainService(object):
                         varname = prep[0].strip()
                         val = prep[1].strip()
                         param[varname.replace('-', '_')] = val
+                logger.info("Configuration from %s loaded" % config)
+                logger.info("Configuration parameters is:\n%s" % functions.safeJsonEncode(param))
                 return param
             except IOError:
                 pass
@@ -168,10 +155,29 @@ class MainService(object):
             configOk = False
         return configOk
 
+
+    def init(self):
+        self.stompService = StompService(
+                                       self.stompHost,
+                                       self.stompPort,
+                                       self.stompLogin,
+                                       self.stompPassword,
+                                       self.stompListeningDestinations,
+                                       self.stompWhatsAppDestinationInboxPrefix,
+                                       self.whatsAppPhone)
+        self.whatsAppService = WhatsAppService(
+                                               self.whatsAppPhone,
+                                               self.whatsAppPassword,
+                                               self.whatsAppAutoReply,
+                                               self.whatsAppReplyUnsupported)
+        self.stompService.setWhatsAppService(self.whatsAppService)
+        self.whatsAppService.setStompService(self.stompService)
+
     def run(self):
         if not self.config():
             logger.error("Exiting")
             return False
+        self.init()
         if not self.start():
             self.stop()
             logger.error("Exiting")

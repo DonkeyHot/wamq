@@ -200,9 +200,6 @@ def signalHandler(signum, frame):
 
 if __name__ == "__main__":
     global mainService
-    if platform.system().lower() != "windows":
-        signal.signal(1, signalHandler)  # SIGHUP    1    Завершение    Закрытие терминала
-        signal.signal(9, signalHandler)  # SIGKILL    9    Завершение    Безусловное завершение
     signal.signal(signal.SIGTERM, signalHandler)  # SIGTERM    15    Завершение    Сигнал завершения (сигнал по умолчанию для утилиты kill)
     signal.signal(signal.SIGINT, signalHandler)  # SIGINT    2    Завершение    Сигнал прерывания (Ctrl-C) с терминала
     mainService = MainService()

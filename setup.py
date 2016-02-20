@@ -4,7 +4,7 @@ from __future__ import print_function
 from setuptools import setup, find_packages
 import wamq
 
-deps = ['yowsup2']
+deps = ['yowsup2', 'stomp.py']
 
 setup(
     name='wamq',

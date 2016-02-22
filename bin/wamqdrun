@@ -1,0 +1,9 @@
+#/bin/env python
+'''
+@author: vadim.isaev
+'''
+from wamqd import daemon
+
+
+if __name__ == '__main__':
+    daemon.run()

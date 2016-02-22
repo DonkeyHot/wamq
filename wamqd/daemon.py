@@ -8,20 +8,20 @@ import signal
 import sys
 import time
 
-from wamq import functions
-from wamq.stomp_service import StompServiceException, StompService
-from wamq.whats_app_service import WhatsAppService
+from wamqd import functions
+from wamqd.stomp_service import StompServiceException, StompService
+from wamqd.whats_app_service import WhatsAppService
 
 
 #    filename='whatsapp_mq_service.log'
 #    stream=sys.stdout
-logging.basicConfig(filename='wamq.log', level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s %(message)s')
+logging.basicConfig(filename='wamqd.log', level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s %(message)s')
 
 logger = logging.getLogger(__name__)
 
 class MainService(object):
 
-    configs = ['wamq.conf', '~/wamq.conf', '/etc/wamq.conf']
+    configs = ['wamqd.conf', '~/wamqd.conf', '/etc/wamqd.conf']
 
     loopMustContinue = True
 

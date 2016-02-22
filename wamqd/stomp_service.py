@@ -6,7 +6,7 @@ import logging
 import stomp
 from stomp.exception import ConnectFailedException
 
-from wamq import functions
+from wamqd import functions
 
 
 logger = logging.getLogger(__name__)

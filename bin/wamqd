@@ -1,9 +1,113 @@
-#/bin/env python
-'''
-@author: vadim.isaev
-'''
-from wamq import daemon
+#!/bin/sh
+#
+# /etc/init.d/wamqd
+# Startup script for WAMQ service
+#
+# chkconfig: 2345 60 70
+# description: WAMQ service daemon
+#
+# processname: WAMQ
+# config: /etc/wamqd.conf
 
+# source function library
+SYSTEMCTL_SKIP_REDIRECT=yes
+. /etc/rc.d/init.d/functions
 
-if __name__ == '__main__':
-    daemon.run()
+WAMQ_WORKDIR="/opt/wamqd"
+WAMQ_EXEC="wamqdrun"
+WAMQ_DESCR="WAMQ daemon service"
+WAMQ_PROC="wamqdrun"
+WAMQ_LOCKFILE="/var/lock/subsys/$WAMQ_PROC"
+WAMQ_USER="wamqd"
+
+RETVAL=0
+
+# Checking current status
+# 0 is running
+# 1 dead but pid file exists
+# 2 dead but subsys locked
+# 3 stopped
+# 4 unknown status
+status $WAMQ_PROC >/dev/null 2>/dev/null
+current=$?
+
+start() {
+    echo -n $"Starting $WAMQ_DESCR:"
+    if [ $current -eq 4 ]; # if status is 4 that means unknow state
+    then
+	failure
+	echo
+	echo "$WAMQ_DESCR status is unknown"
+	RETVAL=8
+	return
+    fi
+    if [ $current -eq 0 ]; # if status is 0 that means running
+    then
+	failure
+	echo
+	echo "$WAMQ_DESCR is already running"
+	RETVAL=9
+	return
+    fi
+    # START
+    cd $WAMQ_WORKDIR
+    daemon --user $WAMQ_USER $WAMQ_EXEC &>/dev/null &
+    RETVAL=$?
+    if [ $RETVAL -eq 0 ];
+    then
+        touch $WAMQ_LOCKFILE
+        success
+    else
+        failure
+    fi
+    echo
+}
+
+stop() {
+    echo -n $"Stopping $WAMQ_DESCR:"
+    if [ $current -eq 4 ]; # if status is 4 that means unknow state
+    then
+	failure
+	echo
+	echo "$WAMQ_DESCR status is unknown"
+	RETVAL=8
+	return
+    fi
+    if [[ "$current" == [123] ]]; # if status is one of the 1, 2, 3 that means dead
+    then
+	failure
+	echo
+	echo "$WAMQ_DESCR is not started"
+	RETVAL=9
+	return
+    fi
+    # STOP
+    killproc $WAMQ_PROC -TERM
+    RETVAL=$?
+    if [ $RETVAL -eq 0 ];
+    then
+	rm -f $WAMQ_LOCKFILE
+	success
+    else
+	failure
+    fi
+    echo
+}
+
+case "$1" in
+    start)
+	start
+	;;
+    stop)
+	stop
+	;;
+    status)
+	status $WAMQ_PROC
+	RETVAL=$?
+	;;
+    *)
+	echo $"Usage: $0 {start|stop|status}"
+	RETVAL=1
+esac
+
+exit $RETVAL

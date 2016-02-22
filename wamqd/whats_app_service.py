@@ -4,7 +4,7 @@
 import logging
 import threading
 
-from wamq.whats_app_stack import WhatsAppStack
+from wamqd.whats_app_stack import WhatsAppStack
 
 
 logger = logging.getLogger(__name__)

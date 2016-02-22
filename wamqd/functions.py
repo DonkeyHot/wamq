@@ -2,8 +2,8 @@
 @author: vadim.isaev
 '''
 import datetime
-import logging
 import json
+import logging
 import signal
 
 

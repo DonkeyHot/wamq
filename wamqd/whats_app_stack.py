@@ -17,9 +17,9 @@ from yowsup.layers.protocol_media.layer import YowMediaProtocolLayer
 from yowsup.layers.protocol_messages.layer import YowMessagesProtocolLayer
 from yowsup.layers.protocol_receipts.layer import YowReceiptProtocolLayer
 from yowsup.stacks import YOWSUP_CORE_LAYERS
+from yowsup.stacks.yowstack import YowStack
 
 from wamqd.whats_app_layer import WhatsAppLayer
-from yowsup.stacks.yowstack import YowStack
 
 
 logger = logging.getLogger(__name__)

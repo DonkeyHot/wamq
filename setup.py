@@ -2,7 +2,9 @@
 from __future__ import print_function
 
 from setuptools import setup, find_packages
+
 import wamqd
+
 
 deps = ['yowsup2', 'stomp.py']
 

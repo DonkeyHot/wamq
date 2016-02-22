@@ -1,12 +1,12 @@
 #!/bin/sh
 #
 # /etc/init.d/wamqd
-# Startup script for WAMQ service
+# Startup script for WAMQ service daemon
 #
 # chkconfig: 2345 60 70
 # description: WAMQ service daemon
 #
-# processname: WAMQ
+# processname: WAMQD
 # config: /etc/wamqd.conf
 
 # source function library

@@ -33,10 +33,10 @@ class MainService(object):
     stompPort = None  # non mandatory
     stompLogin = None  # mandatory
     stompPassword = None  # mandatory
-    stompReconnectionAttemps = None # mandatory
+    stompReconnectionAttemps = None  # mandatory
 
-    stompListeningDestinations = []
-    stompWhatsAppDestinationInboxPrefix = None
+    stompOutboxDestinations = []
+    stompInboxDestinationPrefixes = []
 
     whatsAppService = None
     stompService = None
@@ -122,13 +122,17 @@ class MainService(object):
         if 'stompReconnectionAttemps' in param:
             self.stompReconnectionAttemps = param['stompReconnectionAttemps']
         for i in range(1, 10):
-            key = 'stompListeningDestination.%s' % i;
+            key = 'stompOutboxDestinations.%s' % i;
             if not key in param:
                 break
-            stompListeningDestination = param[key]
-            self.stompListeningDestinations.append(stompListeningDestination)
-        if 'stompWhatsAppDestinationInboxPrefix' in param:
-            self.stompWhatsAppDestinationInboxPrefix = param['stompWhatsAppDestinationInboxPrefix']
+            dest = param[key]
+            self.stompOutboxDestinations.append(dest)
+        for i in range(1, 10):
+            key = 'stompInboxDestinationPrefixes.%s' % i;
+            if not key in param:
+                break
+            dest = param[key]
+            self.stompInboxDestinationPrefixes.append(dest)
 
         configOk = True
         if not self.whatsAppPhone:
@@ -158,11 +162,11 @@ class MainService(object):
         if not self.stompReconnectionAttemps:
             logger.error("Parameter 'stompReconnectionAttemps' is not set")
             configOk = False
-        if not self.stompWhatsAppDestinationInboxPrefix:
-            logger.error("Parameter 'stompWhatsAppDestinationInboxPrefix' is not set")
+        if not len(self.stompOutboxDestinations):
+            logger.error("Parameter 'stompOutboxDestinations.N' is not set")
             configOk = False
-        if not len(self.stompListeningDestinations):
-            logger.error("Parameter 'stompListeningDestination.N' is not set")
+        if not len(self.stompInboxDestinationPrefixes):
+            logger.error("Parameter 'stompInboxDestinationPrefixes.N' is not set")
             configOk = False
         return configOk
 
@@ -174,8 +178,8 @@ class MainService(object):
                                        self.stompLogin,
                                        self.stompPassword,
                                        self.stompReconnectionAttemps,
-                                       self.stompListeningDestinations,
-                                       self.stompWhatsAppDestinationInboxPrefix,
+                                       self.stompOutboxDestinations,
+                                       self.stompInboxDestinationPrefixes,
                                        self.whatsAppPhone)
         self.whatsAppService = WhatsAppService(
                                                self.whatsAppPhone,

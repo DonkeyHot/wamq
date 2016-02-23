@@ -48,7 +48,7 @@ class WhatsAppService(object):
         logger.info("Stopping WhatsApp service...")
         self.stack.stop()
 
-    def sendTextMessage(self,sendFrom, sendTo, text):
+    def sendTextMessage(self, sendFrom, sendTo, text):
         self.stack.layer.sendTextMessage(sendTo, text)
 
     def checkAlive(self):

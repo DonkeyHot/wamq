@@ -29,7 +29,7 @@ class WhatsAppException(object):
     _msg = None
 
     def __init__(self, msg):
-        self._msg =  msg
+        self._msg = msg
 
     def getMessage(self):
         return self._msg

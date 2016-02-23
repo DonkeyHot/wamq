@@ -30,6 +30,7 @@ class MessagesListener(object):
 
     def sendMessageToWhastapp(self, headers, message):
         msg = functions.safeJsonDecode(message)
+        logger.info("Received message: %s" % msg)
 
         sendTo = msg['to']
         sendFrom = msg['from']
@@ -87,7 +88,8 @@ class StompService(object):
         try:
             self.connection = stomp.Connection(
                                                [(self.stompHost, self.stompPort)],
-                                               reconnect_attempts_max=self.stompReconnectionAttemps)
+                                               reconnect_attempts_max=self.stompReconnectionAttemps,
+                                               auto_content_length=False)
             if not self.whatsAppService:
                 raise StompServiceException("WhatsApp service is not set")
             listener = MessagesListener(self.whatsAppService)

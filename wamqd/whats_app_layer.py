@@ -69,6 +69,7 @@ class WhatsAppLayer(YowInterfaceLayer):
     def onTextMessage(self, entity):
         if self.stompService:
             self.stompService.forwardTextMessage(
+                                                 entity.getId(),
                                                  entity.getFrom(False),
                                                  entity.getBody(),
                                                  entity.getTimestamp())
@@ -76,12 +77,12 @@ class WhatsAppLayer(YowInterfaceLayer):
     def onImageMessage(self, entity):
         if self.stompService:
             self.stompService.forwardImageURL(
+                                              entity.getId(),
                                               entity.getFrom(False),
                                               entity.url,
                                               entity.caption,
                                               entity.fileName,
                                               entity.mimeType,
-                                              entity.size,
                                               entity.getTimestamp())
 
     def onAudioMessage(self, entity):

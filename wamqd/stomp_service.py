@@ -1,12 +1,15 @@
+# -*- coding: utf-8 -*-
 '''
 @author: vadim.isaev
 '''
 import logging
 
 import stomp
+from stomp.constants import HDR_CONTENT_TYPE, HDR_CONTENT_LENGTH
 from stomp.exception import ConnectFailedException
 
 from wamqd import functions
+from wamqd.constants import *
 
 
 logger = logging.getLogger(__name__)
@@ -35,9 +38,8 @@ class MessagesListener(object):
         sendTo = msg['to']
         sendFrom = msg['from']
         msgType = msg['type']
-        content = msg['content']
         if msgType == 'text':
-            text = content['text']
+            text = msg['text']
             self.whatsAppService.sendTextMessage(sendFrom, sendTo, text)
 
 
@@ -57,7 +59,7 @@ class StompService(object):
     stompPassword = None
     stompReconnectionAttemps = None
     stompOutboxDestinations = None
-    stompInboxDestinationPrefixes = None
+    stompInboxDestinations = None
     whatsAppPhone = None
 
     whatsAppService = None
@@ -69,7 +71,7 @@ class StompService(object):
                  stompPassword,
                  stompReconnectionAttemps,
                  stompOutboxDestinations,
-                 stompInboxDestinationPrefixes,
+                 stompInboxDestinations,
                  whatsAppPhone):
         self.stompHost = stompHost
         self.stompPort = stompPort
@@ -77,7 +79,7 @@ class StompService(object):
         self.stompPassword = stompPassword
         self.stompReconnectionAttemps = stompReconnectionAttemps
         self.stompOutboxDestinations = stompOutboxDestinations
-        self.stompInboxDestinationPrefixes = stompInboxDestinationPrefixes
+        self.stompInboxDestinations = stompInboxDestinations
         self.whatsAppPhone = whatsAppPhone
 
     def setWhatsAppService(self, whatsAppService):
@@ -112,34 +114,44 @@ class StompService(object):
         self.connection.disconnect()
         self.connection.stop()
 
-    def forwardTextMessage(self, messageFrom, text, timestamp):
-        self._send(messageFrom, {
-                                 'from' : messageFrom,
-                                 'to': self.whatsAppPhone,
-                                 'sent': functions.convertTimeStampToText(timestamp),
-                                 'type': 'text',
-                                 'content' : {'text': text}})
+    def forwardTextMessage(self, msgId, msgSender, msgText, msgSentTimestamp):
+        if self.stompInboxDestinations:
+            for dest in self.stompInboxDestinations:
+                self.connection.send(dest,
+                                     msgText,
+                                     headers={
+                                              HDR_CONTENT_TYPE: CONTENT_TYPE_TEXT_MESSAGE,
+                                              HDR_CONTENT_LENGTH: None,
+                                              HDR_WHATSAPP_MESSAGE_TYPE: MESSAGE_TYPE_TEXT,
+                                              HDR_WHATSAPP_ID: msgId,
+                                              HDR_WHATSAPP_SENDER: msgSender,
+                                              HDR_WHATSAPP_RECIPIENT: self.whatsAppPhone,
+                                              HDR_WHATSAPP_SENT: functions.convertTimeStampToText(msgSentTimestamp)
+                                              }
+                                     )
+                logger.info("Text message forwarded to ActiveMQ destination '%s'" % dest)
 
-    def forwardImageURL(self, messageFrom, url, caption, fileName, mimeType, size, timestamp):
-        self._send(messageFrom, {
-                                 'from' : messageFrom,
-                                 'to': self.whatsAppPhone,
-                                 'sent': functions.convertTimeStampToText(timestamp),
-                                 'type': 'image',
-                                 'content' : {
-                                              'caption' : caption,
-                                              'fileName': fileName,
-                                              'mimeType' : mimeType,
-                                              'fileSize' : size,
-                                              'url': url,
-                                              }})
+    def forwardImageURL(self, msgId, msgSender, url, caption, fileName, mimeType, msgSentTimestamp):
+        import urllib2
+        response = urllib2.urlopen(url)
+        image = response.read()
 
-    def _send(self, messageFrom, message):
-        jsonCode = functions.safeJsonEncode(message)
-        if self.stompInboxDestinationPrefixes:
-            for d in self.stompInboxDestinationPrefixes:
-                dest = "%s/%s" % (d, messageFrom)
-                self.connection.send(dest, jsonCode)
+        if self.stompInboxDestinations:
+            for dest in self.stompInboxDestinations:
+                self.connection.send(dest,
+                                     image,
+                                     headers={
+                                              HDR_CONTENT_TYPE: mimeType,
+                                              HDR_CONTENT_LENGTH: len(image),
+                                              HDR_WHATSAPP_MESSAGE_TYPE: MESSAGE_TYPE_IMAGE,
+                                              HDR_WHATSAPP_ID: msgId,
+                                              HDR_WHATSAPP_SENDER: msgSender,
+                                              HDR_WHATSAPP_RECIPIENT: self.whatsAppPhone,
+                                              HDR_WHATSAPP_SENT: functions.convertTimeStampToText(msgSentTimestamp),
+                                              HDR_WHATSAPP_FILE_NAME: fileName,
+                                              HDR_WHATSAPP_IMAGE_TEXT: caption
+                                              }
+                                     )
                 logger.info("Text message forwarded to ActiveMQ destination '%s'" % dest)
 
     def checkAlive(self):

@@ -32,16 +32,16 @@ class MessagesListener(object):
         self.sendMessageToWhastapp(headers, message)
 
     def sendMessageToWhastapp(self, headers, message):
-        msg = functions.safeJsonDecode(message)
-        logger.info("Received message: %s" % msg)
-
-        sendTo = msg['to']
-        sendFrom = msg['from']
-        msgType = msg['type']
-        if msgType == 'text':
-            text = msg['text']
-            self.whatsAppService.sendTextMessage(sendFrom, sendTo, text)
-
+        whatsappMessageType = headers[HDR_WHATSAPP_MESSAGE_TYPE]
+        whatsappRecipient = headers[HDR_WHATSAPP_RECIPIENT]
+        whatsappSender = headers[HDR_WHATSAPP_SENDER]
+        if whatsappMessageType == MESSAGE_TYPE_TEXT:
+            self.whatsAppService.sendTextMessage(whatsappSender, whatsappRecipient, message)
+            logger.info("Sending message to WhatsApp number '%s'" % whatsappRecipient)
+        elif whatsappMessageType == MESSAGE_TYPE_IMAGE:
+            logger.error("Message type '%s' is not supported" % whatsappMessageType)
+        else:
+            logger.error("Message type '%s' is not supported" % whatsappMessageType)
 
 class StompServiceException(object):
     __message = None
@@ -129,7 +129,7 @@ class StompService(object):
                                               HDR_WHATSAPP_SENT: functions.convertTimeStampToText(msgSentTimestamp)
                                               }
                                      )
-                logger.info("Text message forwarded to ActiveMQ destination '%s'" % dest)
+                logger.info("TEXT forwarded to ActiveMQ destination '%s'" % dest)
 
     def forwardImageURL(self, msgId, msgSender, url, caption, fileName, mimeType, msgSentTimestamp):
         import urllib2
@@ -152,7 +152,7 @@ class StompService(object):
                                               HDR_WHATSAPP_IMAGE_TEXT: caption
                                               }
                                      )
-                logger.info("Text message forwarded to ActiveMQ destination '%s'" % dest)
+                logger.info("IMAGE message forwarded to ActiveMQ destination '%s'" % dest)
 
     def checkAlive(self):
         if not self.connection.is_connected():

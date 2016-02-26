@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 class MainService(object):
 
-    configs = ['wamqd.conf', '~/wamqd.conf', '/etc/wamqd.conf']
+    configs = ['wamqd.conf', '/etc/default/wamqd.conf']
 
     loopMustContinue = True
 

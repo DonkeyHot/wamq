@@ -15,7 +15,7 @@ setup(
     url='https://gitrepo.theeurasia.kz/eurasia/wamqd',
     install_requires=deps,
     scripts=['bin/wamqd', 'bin/wamqdrun'],
-    data_files=[('etc', ['etc/default-wamqd.conf'])],
+    data_files=[('etc', ['wamqd.conf'])],
     author_email='vadim.o.isaev@gmail.com',
     description='Whatsap to MQ services mapper daemon',
     packages=find_packages(),

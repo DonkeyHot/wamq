@@ -50,7 +50,6 @@ start() {
 	return
     fi
     # START
-    cd $WAMQ_WORKDIR
     daemon --user $WAMQ_USER $WAMQ_EXEC &>/dev/null &
     RETVAL=$?
     if [ $RETVAL -eq 0 ];

@@ -70,6 +70,3 @@ target/
 
 # Mac OS X service directories
 .DS_Store
-
-wamqd.conf
-wamqd.log
